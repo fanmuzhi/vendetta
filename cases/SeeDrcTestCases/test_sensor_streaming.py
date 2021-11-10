@@ -16,7 +16,7 @@ list_params = [
         {
             'sensor': 'accel',
             'duration': 5,
-            'factory_test': 2,
+            'sample_rate': 50,
         },
         None
     ),
@@ -38,11 +38,11 @@ list_params = [
 
 class TestSensorStreaming(object):
 
-    @pytest.mark.parametrize('generate_ssc_drva_data_packet', list_params, indirect=True)
-    def test_sensor_streaming(self, generate_ssc_drva_data_packet):
+    @pytest.mark.parametrize('generate_ssc_drva_hdf_log', list_params, indirect=True)
+    def test_sensor_streaming(self, generate_ssc_drva_hdf_log):
         # f = run_ssc_drva_test
-        log_fp = r'C:\Users\FNH1SGH\Desktop\11111\Data\SensorAPI_ACCEL_S0_I0_D2_R1_[std_sensor_event].csv'
-        log_obj = std_sensor_event_log.SeeDrvLog(log_fp, skip_data=1)
+        csv_log_fp = r'C:\Users\FNH1SGH\Desktop\11111\Data\SensorAPI_ACCEL_S0_I0_D2_R1_[std_sensor_event].csv'
+        log_obj = std_sensor_event_log.SeeDrvLog(csv_log_fp, skip_data=1)
         unit = std_sensor_event_log.unit[sensor]
         stats = log_obj.data_df.describe()
         with pytest.assume:

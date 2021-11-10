@@ -669,7 +669,7 @@ def execTest(quts_client):
             " ",
             diagPackets[i].packetName,
         )  ##, ' ' , diagPackets[i].summaryText )
-    time.sleep(50)
+    time.sleep(10)
 
     '''
 	##Adding filters and removeing filters

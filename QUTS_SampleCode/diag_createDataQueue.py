@@ -48,7 +48,7 @@ time.sleep(1)
 deviceList = deviceManager.getDeviceList()
 print("\n\nList of Devices: ")
 for item in deviceList:
-    if -1 != item.description.find("Qualcomm"):
+    if -1 != item.description.find("Qualcomm USB Composite Device"):
         deviceId = item.deviceHandle
     print(item)
 print("deviceId = ", deviceId)
@@ -77,7 +77,7 @@ if 0 != diagService:
     diagService.getLastError()
 # ##################################################################
 #
-# deviceManager.startLogging()
+deviceManager.startLogging()
 
 # file = open('C:\dmc\test.dmc',"rb")
 # contents = file.read()
@@ -175,41 +175,40 @@ returnObjDiag.flags = (
     | Common.ttypes.DiagReturnFlags.ENCRYPTION_KEY_INFO
 )
 
-diagService.createDataQueue("data", diagPacketFilter, returnObjDiag)
+# diagService.createDataQueue("data", diagPacketFilter, returnObjDiag)
 
 print("sleeping 10 secs")
 time.sleep(10)
 
-diagPackets = diagService.getDataQueueItems("data", 300000, 2000)
-for i in range(len(diagPackets)):
-    # print(
-    #     diagPackets[i].packetId,
-    #     ' ',
-    #     diagPackets[i].parsedText,
-    #     " ",
-    #     diagPackets[i].summaryText,
-    # )
-
-    # print([f"{k}: {v}" for k, v in diagPackets[i].__dict__])
-    pp(
-        # diagPackets[i].packetId,
-        # diagPackets[i].packetType,
-        # diagPackets[i].timeStampData,
-        # diagPackets[i].packetName,
-        # diagPackets[i].summaryText,
-        # diagPackets[i].binaryPayload,
-        # diagPackets[i].ulogSource,
-        diagPackets[i].__dict__
-    )
-    print("----------------------------------------------------")
-
-print("Total pkts", len(diagPackets))
-
-diagService.removeDataQueue("data")
+# diagPackets = diagService.getDataQueueItems("data", 300000, 2000)
+# for i in range(len(diagPackets)):
+#     # print(
+#     #     diagPackets[i].packetId,
+#     #     ' ',
+#     #     diagPackets[i].parsedText,
+#     #     " ",
+#     #     diagPackets[i].summaryText,
+#     # )
+#
+#     # print([f"{k}: {v}" for k, v in diagPackets[i].__dict__])
+#     pp(
+#         # diagPackets[i].packetId,
+#         # diagPackets[i].packetType,
+#         # diagPackets[i].timeStampData,
+#         # diagPackets[i].packetName,
+#         # diagPackets[i].summaryText,
+#         # diagPackets[i].binaryPayload,
+#         # diagPackets[i].ulogSource,
+#         diagPackets[i].__dict__
+#     )
+#     print("----------------------------------------------------")
+#
+# print("Total pkts", len(diagPackets))
+# diagService.removeDataQueue("data")
 
 qutsLogFileFolder = "C:\\temp\\testlog"
-deviceManager.saveLogFiles(qutsLogFileFolder)
-# deviceManager.saveLogFilesWithFilenames({562954248388608: "fmz.hdf"})
+# deviceManager.saveLogFiles(qutsLogFileFolder)
+deviceManager.saveLogFilesWithFilenames({562954248388608: r"C:\temp\testlog\fmz.hdf"})
 
 diagService.destroyService()
 
