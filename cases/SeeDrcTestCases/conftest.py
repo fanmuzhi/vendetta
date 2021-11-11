@@ -8,7 +8,7 @@ __version__ = "init"
 __author__ = "@henry.fan"
 
 # import contextlib
-# import os
+import os
 # import sys
 # import time
 import pytest
@@ -27,7 +27,7 @@ from lib.utils import *
 # common fixtures
 
 
-@pytest.fixture(scope='package', autouse=True)
+@pytest.fixture(scope='session')
 def isadmin():
     if is_admin():
         return True
@@ -220,10 +220,11 @@ def quts_load_config(quts_diag_service):
 @pytest.fixture(scope='function')
 def generate_ssc_drva_hdf_log(quts_dev_mgr, ssc_drva, request):
     param_sets = request.param
-    filename = r"C:\temp\testlog\test.hdf"
+    filename = rf"C:\temp\testlog\{datetime_str()}.hdf"
     ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(param_sets=param_sets)
     with logging_diag_hdf(quts_dev_mgr, filename):
         ssc_drva.ssc_drva_run(ssc_drva_cmd)
+    return filename
 
 
 @pytest.fixture(scope='function')
@@ -237,8 +238,6 @@ def generate_ssc_drva_data_packet(
         quts_diag_service, queuename
     ):
         ssc_drva.ssc_drva_run(ssc_drva_cmd)
-
-
 
 
 # @pytest.fixture(scope='function')
@@ -255,16 +254,43 @@ def generate_ssc_drva_data_packet(
 @pytest.fixture(scope='package')
 def qseevt(isadmin):
     seevt = Qseevt(lib.seevt.seevt.seevt_exe)
+    seevt.run()
+    seevt.enter_log_analysis_window()
+
     yield seevt
+
     del seevt
 
 
-@pytest.fixture(scope='package', autouse=True)
-def qseevt_init_analysis_window(qseevt):
-    qseevt.run()
-    qseevt.enter_log_analysis_window()
+# @pytest.fixture(scope='package', autouse=True)
+# def qseevt_init_analysis_window(qseevt):
+#     qseevt.run()
+#     qseevt.enter_log_analysis_window()
+#     qseevt.set_sensor_info_file_text(
+#         info_file=r"C:\Users\FNH1SGH\Desktop\bmi320_sensor_info.txt"
+#     )
+#     yield qseevt
+#     qseevt.close()
+#
+
+# stream test fixtures funcions
+@pytest.fixture(scope='function')
+def collect_stream_data_files(ssc_drva, quts_dev_mgr, qseevt, request):
+    param_sets = request.param
+    filename = rf"C:\temp\testlog\{datetime_str()}.hdf"
+    ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(param_sets=param_sets)
+    with logging_diag_hdf(quts_dev_mgr, filename):
+        ssc_drva.ssc_drva_run(ssc_drva_cmd)
+    qseevt.set_hdffile_text(filename)
     qseevt.set_sensor_info_file_text(
         info_file=r"C:\Users\FNH1SGH\Desktop\bmi320_sensor_info.txt"
     )
-    yield qseevt
-    qseevt.close()
+    qseevt.run_log_analysis()
+    while not qseevt.analyze_complete():
+        time.sleep(0.1)
+
+    return os.path.splitext(filename)[0]
+
+
+
+

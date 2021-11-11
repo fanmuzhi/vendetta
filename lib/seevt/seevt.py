@@ -202,6 +202,12 @@ class Qseevt(object):
         richedit_content = dumpwindow(edit)['text']
         return richedit_content
 
+    def analyze_complete(self):
+        text_list = self.get_last_info_text()
+        if isinstance(text_list, list) and 'Log analysis completed!' in text_list:
+            return True
+        else: return False
+
         # hwd = w_handle[0]
         # winlist = children(hwd)
         #
@@ -283,108 +289,11 @@ def analyze_hdf_file(hdf_file, seevt_exe, out=False):
     p_qawa.close(log_analysis_window_name)
     return ret_val
 
-#
-# def parse_dlf_logs_in_dir(log_dir, out=False):
-#     wait_for = 'ready'
-#     if not os.path.isdir:
-#         logging.error("invalid log dir, please check")
-#     else:
-#         p_qawa = QaatCtrl(seevt_exe)
-#         ret_val = False
-#         logging.info("Start qaat to analyze logs")
-#         try:
-#             logging.info("Open Log Analysis dialog window")
-#             p_qawa.run()
-#             p_qawa.wait(main_window_name, wait_for)
-#             p_qawa.minimize(main_window_name)
-#             p_qawa.send_keystrokes(
-#                 main_window_name, main_window_button_log_file_name, '{SPACE}'
-#             )
-#
-#             logging.info("Browse log file .dlf log file")
-#             p_qawa.wait(log_analysis_window_name, wait_for)
-#             p_qawa.minimize(log_analysis_window_name)
-#         except application.AppStartError as e:
-#             logging.error(e)
-#
-#         for par, dirs, files in os.walk(log_dir):
-#             for file in files:
-#                 name, ext = os.path.splitext(file)
-#                 if not ext == ".dlf":
-#                     continue
-#                 dlf_file = os.path.join(par, file)
-#                 try:
-#                     assert os.path.exists(dlf_file)
-#                 except AssertionError:
-#                     logging.error("dlf file is not existed, please confirm.")
-#                     return ret_val
-#
-#                 logging.info("Browse log file .dlf log file")
-#                 p_qawa.wait(log_analysis_window_name, wait_for)
-#                 p_qawa.minimize(log_analysis_window_name)
-#                 p_qawa.send_keystrokes(log_analysis_window_name, "...", '{SPACE}')
-#
-#                 logging.info("Input log file name!")
-#                 p_qawa.wait(choose_log_file_window_name, wait_for)
-#                 p_qawa.minimize(choose_log_file_window_name)
-#                 p_qawa.input(choose_log_file_window_name, "Edit", dlf_file)
-#                 p_qawa.send_keystrokes(choose_log_file_window_name, r"&Open", '{SPACE}')
-#
-#                 logging.info("Run Analysis")
-#                 p_qawa.wait(log_analysis_window_name, wait_for)
-#                 p_qawa.minimize(log_analysis_window_name)
-#                 p_qawa.send_keystrokes(
-#                     log_analysis_window_name, "Run Analysis", '{SPACE}'
-#                 )
-#
-#                 # static = p_qawa.app.DialogName.child_window(
-#                 #     title_re='Error', class_name_re='Static')
-#                 # if static.exists(timeout=5):
-#                 #     logging.error(
-#                 #         "There is an error, it can not analyze the dlf log.")
-#                 #     print("There should be error handle process")
-#                 #     p_qawa.app.DialogName.OK.click()
-#                 # p_qawa.close(main_window_name)
-#                 # return ret_val
-#                 #
-#                 # Checking if the analysis process is finished
-#                 analysis_running = True
-#                 printed_msg = ''
-#                 logging.info(f"analysing {os.path.join(par, file)}...")
-#                 while analysis_running:
-#                     current_proc_msg = p_qawa.get_test_proc_info_richedit()
-#                     if len(current_proc_msg) > len(printed_msg):
-#                         if out:
-#                             logging.debug(current_proc_msg[len(printed_msg) :])
-#                         printed_msg = current_proc_msg
-#                     if Finish_flag in current_proc_msg:
-#                         logging.info("Analysis is done!")
-#                         analysis_running = False
-#                         ret_val = True
-#                     time.sleep(0.5)
-#
-#                 # time.sleep(1)
-#         logging.info("Close QaatCtrl window")
-#         p_qawa.close(log_analysis_window_name)
-#         return ret_val
-
 
 if __name__ == "__main__":
     hdf = r'C:\Users\FNH1SGH\Desktop\hdfs\11-08.15-27-30-425.hdf'
     ret_val = False
     wait_until = 'ready'
-    # import json
-    #
-    # report = r'C:\PythonProjects\Cartel\src\reports\HDK8150_bmi26x_i2c@2021-04-20_14-48-32.json'
-    # with open(report) as f:
-    #     report_dict = json.load(f)
-    #     case_list = report_dict.get('testcases', [])
-    #     f_list = [case.get('dlf') for case in case_list if case.get('dlf', None)]
-    # analyze_dlf_files(
-    #     f_list,
-    #     "C:\\Program Files\\Qualcomm\\QualcommAll-WaysAware\\QualcommAll-WaysAware.exe",
-    # )
-
 
 
     print(is_admin())
@@ -403,7 +312,7 @@ if __name__ == "__main__":
             print(pq.get_last_info_text())
             time.sleep(1)
         time.sleep(51)
-        pq.close(log_analysis_window_name)
+        pq.close()
         #
         # pq.wait(qseevt_luanch_window_name, wait_until)
         # pq.app[m]
