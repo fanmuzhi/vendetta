@@ -10,7 +10,7 @@ __author__ = "@henry.fan"
 import os
 import json
 from lib.adb.adb import ADB
-# import config as cfg
+from lib import config as cfg
 
 
 class ConfigJson:
@@ -107,12 +107,12 @@ class FacCalBias(ConfigJson):
     def read_imu_bias_values(self, sensor):
         if not sensor:
             return
-        bias_dict = self._json_buffer
-        root = list(bias_dict.keys())[0]
+        self._json_buffer = self.load_remote_json()
+        root = list(self._json_buffer.keys())[0]
         return (
-            int(bias_dict[root]['x']['ver']),
-            int(bias_dict[root]['y']['ver']),
-            int(bias_dict[root]['z']['ver']),
+            int(self._json_buffer[root]['x']['ver']),
+            int(self._json_buffer[root]['y']['ver']),
+            int(self._json_buffer[root]['z']['ver']),
         )
 
 

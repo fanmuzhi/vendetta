@@ -134,6 +134,11 @@ class ADB:
         ret = self.adb_shell_run(cmd, stdout=subprocess.PIPE, check=True, timeout=60)
         return ret.stdout
 
+    def adb_sensor_info(self):
+        cmd = ['ssc_sensor_info']
+        ret = self.adb_shell_run(cmd, stdout=subprocess.PIPE, encoding='utf-8', check=True, timeout=60)
+        return ret.stdout
+
 
 if __name__ == '__main__':
     """
@@ -141,3 +146,4 @@ if __name__ == '__main__':
     """
     dev_id = ADB.adb_devices()
     adb = ADB(device_id=dev_id)
+    print(adb.adb_sensor_info())

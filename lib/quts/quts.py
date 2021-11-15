@@ -206,14 +206,6 @@ def create_filters(all_filters):
 
 def create_data_queue_for_monitoring(diag_service, all_filters, queue_name):
     ### Createa data Queue. Reading will be done in the callback.
-    item = {}
-    item[Common.ttypes.DiagPacketType.LOG_PACKET] = [
-        "18/2058",
-        "11/37",
-        "18/93",
-        "75/9483",
-    ]
-
     diag_packet_filter = create_filters(all_filters)
 
     return_obj_diag = Common.ttypes.DiagReturnConfig()
@@ -231,11 +223,12 @@ def create_data_queue_for_monitoring(diag_service, all_filters, queue_name):
     error_code = diag_service.createDataQueue(
         queue_name, diag_packet_filter, return_obj_diag
     )
-    if error_code != 0:
-        print("Error  creating data queue", error_code)
-        sys.exit(1)
-    else:
-        print("Data queue Created")
+    return error_code
+    # if error_code != 0:
+    #     print("Error  creating data queue", error_code)
+    #     sys.exit(1)
+    # else:
+    #     print("Data queue Created")
 
 
 def update_filters_to_queue(diag_service, all_filters, queue_name, add_or_remove):

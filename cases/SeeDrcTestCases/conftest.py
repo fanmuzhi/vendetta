@@ -20,6 +20,7 @@ from lib.adb.adb import ADB
 from lib.ssc_drva.ssc_drva import SscDrvaTest
 from lib.quts.quts import *
 from lib.seevt.seevt import Qseevt
+from lib.sensor_file.sensor_file import FacCalBias
 from lib.utils import *
 
 # myadb = ADB()
@@ -32,7 +33,7 @@ def isadmin():
     if is_admin():
         return True
     else:
-        pytest.exit("please run this app as adminisitrator")
+        pytest.exit("Please run this app as adminisitrator")
 
 
 # adb fixtures
@@ -59,11 +60,6 @@ def ssc_drva(adb):
     ssc_drva = SscDrvaTest(adb)
     yield ssc_drva
     del ssc_drva
-
-
-# @pytest.fixture()
-# def aseemble_drva_cmd(ssc_drva, param_sets):
-#     return ssc_drva.set_ssc_drva_cmd(param_sets=param_sets)
 
 
 @pytest.fixture(scope="package")
@@ -96,50 +92,20 @@ def quts_set_all_callbacks(quts_client):
     set_all_callbacks(quts_client)
 
 
-#
-# @pytest.fixture(scope="package")
-# def quts_diag_packet_filter():
-#     diag_packet_filter = Common.ttypes.DiagPacketFilter()
-#     diag_packet_filter.idOrNameMask = {}
-#     yield diag_packet_filter
-#     del diag_packet_filter
-#
-#
-# @pytest.fixture(scope="package", autouse=True)
-# def quts_init_diag_packet_filter_by_name_or_mask(quts_diag_packet_filter):
-#     quts_diag_packet_filter.idOrNameMask[Common.ttypes.DiagPacketType.LOG_PACKET] = log_packet_filter_items
-#     quts_diag_packet_filter.idOrNameMask[Common.ttypes.DiagPacketType.EVENT] = event_filter_items
-#     quts_diag_packet_filter.idOrNameMask[Common.ttypes.DiagPacketType.DEBUG_MSG] = debug_filter_items
-#
-#
-# @pytest.fixture(scope='package')
-# def quts_return_obj_diag():
-#     diag_return_obj = Common.ttypes.DiagReturnConfig()
-#     yield diag_return_obj
-#     del diag_return_obj
-#
-#
-# @pytest.fixture(scope='package', autouse=True)
-# def quts_init_diag_return_obj_flags(quts_return_obj_diag):
-#     quts_return_obj_diag.flags = (
-#             Common.ttypes.DiagReturnFlags.PARSED_TEXT
-#             | Common.ttypes.DiagReturnFlags.PACKET_NAME
-#             | Common.ttypes.DiagReturnFlags.PACKET_ID
-#             | Common.ttypes.DiagReturnFlags.PACKET_TYPE
-#             | Common.ttypes.DiagReturnFlags.SUBSCRIPTION_ID
-#             | Common.ttypes.DiagReturnFlags.SUMMARY_TEXT
-#     )
-
-
-@pytest.fixture(scope='module')
-def data_queue_for_monitoring(quts_diag_service, queuename="data"):
-    items = {}
+@pytest.fixture(scope='function')
+def data_queue(quts_diag_service, queuename="data"):
+    items = dict()
     items[Common.ttypes.DiagPacketType.LOG_PACKET] = log_packet_filter_item
     items[Common.ttypes.DiagPacketType.EVENT] = event_filter_item
     items[Common.ttypes.DiagPacketType.DEBUG_MSG] = debug_msg_filter_item
-    create_data_queue_for_monitoring(quts_diag_service, items, queue_name=queuename)
-    yield
+    error_code = create_data_queue_for_monitoring(quts_diag_service, items, queue_name=queuename)
+    if error_code != 0:
+        pytest.exit("Error  creating data queue error code: {error_code}")
+    else:
+        print("Data queue Created")
+    yield queuename
     quts_diag_service.removeDataQueue(queuename)
+    del items
 
 
 @pytest.fixture(scope="package", autouse=True)
@@ -256,9 +222,10 @@ def qseevt(isadmin):
     seevt = Qseevt(lib.seevt.seevt.seevt_exe)
     seevt.run()
     seevt.enter_log_analysis_window()
-
+    seevt.minimize()
     yield seevt
 
+    seevt.close()
     del seevt
 
 
@@ -273,23 +240,52 @@ def qseevt(isadmin):
 #     qseevt.close()
 #
 
-# stream test fixtures funcions
+# general test fixtures funcions
+
+@pytest.fixture(scope='package', autouse=True)
+def sensor_info_txt(adb):
+    text = adb.adb_sensor_info()
+    if text:
+        filename = os.path.join(os.path.dirname(__file__), 'sensorinfo.txt')
+        with open(filename, 'w') as f:
+            f.write(text)
+        yield filename
+        os.remove(filename)
+    else:
+        pytest.exit('Cannot get ssc_sensor_info text')
+
+
 @pytest.fixture(scope='function')
-def collect_stream_data_files(ssc_drva, quts_dev_mgr, qseevt, request):
+def collect_stream_data_files(ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, request):
     param_sets = request.param
-    filename = rf"C:\temp\testlog\{datetime_str()}.hdf"
+    filename = rf"C:\temp\testlog\{log_file_name(param_sets)}.hdf"
+
     ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(param_sets=param_sets)
     with logging_diag_hdf(quts_dev_mgr, filename):
         ssc_drva.ssc_drva_run(ssc_drva_cmd)
     qseevt.set_hdffile_text(filename)
     qseevt.set_sensor_info_file_text(
-        info_file=r"C:\Users\FNH1SGH\Desktop\bmi320_sensor_info.txt"
+        info_file=sensor_info_txt
     )
     qseevt.run_log_analysis()
     while not qseevt.analyze_complete():
         time.sleep(0.1)
+    parsed_folder = os.path.splitext(filename)[0]
+    return da_test_csv_files_in(parsed_folder)
 
-    return os.path.splitext(filename)[0]
+
+@pytest.fixture(scope='function')
+def bias(request):
+    param_sets = request.param
+    sensor = param_sets[0].get('sensor')
+
+    bias_folder = r'mnt/vendor/persist/sensors/registry/registry'
+    productname = r'bmi3x0'
+    biasfile = rf'{bias_folder}/{productname}_0_platform.{sensor}.fac_cal.bias'
+    bias = FacCalBias(biasfile)
+    # biasver_vals = bias.read_imu_bias_values(sensor)
+    yield bias
+    del bias, productname, sensor, bias_folder, biasfile
 
 
 

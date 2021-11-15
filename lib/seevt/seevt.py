@@ -170,8 +170,8 @@ class Qseevt(object):
         self.app[log_analysis_window_name].close()
         # print(f'close {self.app.is_process_running()}')
 
-    def minimize(self, window_name):
-        self.app[window_name].minimize()
+    def minimize(self):
+        self.app[log_analysis_window_name].minimize()
 
     def click(self, window_name, controller):
         self.app[window_name][controller].click()
