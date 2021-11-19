@@ -10,6 +10,7 @@ __author__ = "@henry.fan"
 import contextlib
 import sys
 import time
+import re
 
 # The path where QUTS files are installed
 if sys.platform.startswith("linux"):
@@ -246,12 +247,12 @@ def update_filters_to_queue(diag_service, all_filters, queue_name, add_or_remove
 
 
 @contextlib.contextmanager
-def logging_diag_hdf(dev_mgr: DeviceManager.DeviceManager.Client, filename):
+def logging_diag_hdf(dev_mgr: DeviceManager.DeviceManager.Client, hdf_file):
     dev_mgr.startLogging()
     yield
     device = get_device_handle(dev_mgr)
     diag_protocol = get_diag_protocal_handle(dev_mgr, device)
-    dev_mgr.saveLogFilesWithFilenames({diag_protocol: filename})
+    dev_mgr.saveLogFilesWithFilenames({diag_protocol: hdf_file})
 
 
 @contextlib.contextmanager
@@ -259,83 +260,24 @@ def logging_data_queue(
     diag_service,
     queue_name,
     count=300000,
-    timeout=200,
+    timeout=20,
 ):
     items = {}
     items[Common.ttypes.DiagPacketType.LOG_PACKET] = log_packet_filter_item
     items[Common.ttypes.DiagPacketType.EVENT] = event_filter_item
     items[Common.ttypes.DiagPacketType.DEBUG_MSG] = debug_msg_filter_item
-    create_data_queue_for_monitoring(diag_service, items, 'data')
+    # create_data_queue_for_monitoring(diag_service, items, 'data')
     # diag_service.createDataQueue(queue_name, diag_packet_filter, return_obj_diag)
-    yield
+    # yield
     diag_packets = diag_service.getDataQueueItems(queue_name, count, timeout)
-    for diag_packet in diag_packets:
-        if diag_packet.packetId == '125/1':
-            print(diag_packet.summaryText)
+    yield diag_packets
+    # for diag_packet in diag_packets:
+    #     if diag_packet.packetId == '125/1':
+    #         print(diag_packet.summaryText)
 
-    diag_service.removeDataQueue(queue_name)
-
-# class Quts(object):
-#
-#     def __init__(self):
-#         # try:
-#         self.client = None
-#         self.dev_manager = None
-#         # self.init_client()
-#         # self.dev_manager = self.device_manager()
-#         # self.device_handle = self.get_device_for_service(DiagService.constants.DIAG_SERVICE_NAME)[0]
-#
-#         self.setup_callbacks()
-#         # except Exception as e:
-#         #     print(e)
-#
-#     def init_client(self):
-#         try:
-#             self.client = QutsClient.QutsClient("QUTS Sample")
-#         except Exception as e:
-#             print(e)
-#
-#     def device_manager(self):
-#         self.client.getDeviceManager()
-#         time.sleep(1)
-#
-#     def list_devices(self):
-#         return self.dev_manager.getDeviceList()
-#
-#     def list_services(self):
-#         return self.dev_manager.getServicesList()
-#
-#     def list_protocals(self, device_id):
-#         return self.dev_manager.getProtocolList(device_id)
-#
-#     def get_device_for_service(self, service_name):
-#         return self.dev_manager.getDevicesForService(service_name)
-#
-#     def init_dev_service(self, device_handle):
-#         dev_config = DeviceConfigService.DeviceConfigService.Client(
-#             self.client.createService(DeviceConfigService.constants.DEVICE_CONFIG_SERVICE_NAME, device_handle))
-#         dev_service = dev_config.initializeService()
-#         return dev_service
-#
-#     def init_diag_service(self, device_handle, diag_protocal_handle=None):
-#         diag_service = DiagService.DiagService.Client(
-#             self.client.createService(DiagService.constants.DIAG_SERVICE_NAME, device_handle)
-#         )
-#         if not diag_protocal_handle:
-#             diag_service.initializeService()
-#         else:
-#             diag_service.initializeServiceByProtocol(diag_protocal_handle)
-#         return diag_service
-#
-#     def setup_callbacks(self):
-#         self.client.setOnDataQueueUpdatedCallback(on_data_queue_callback)
-#
-#     def stop_quts_client(self):
-#         self.client.stop()
+    # diag_service.removeDataQueue(queue_name)
 
 
-# client = init_quts_client()
-# client.setOnDataQueueUpdatedCallback(on_data_queue_callback)
 if __name__ == "__main__":
     pass
     # quts_obj = ()

@@ -175,33 +175,34 @@ returnObjDiag.flags = (
     | Common.ttypes.DiagReturnFlags.ENCRYPTION_KEY_INFO
 )
 
-# diagService.createDataQueue("data", diagPacketFilter, returnObjDiag)
+diagService.createDataQueue("data", diagPacketFilter, returnObjDiag)
 
 print("sleeping 10 secs")
 time.sleep(10)
+diagPackets = diagService.getDataQueueItems("data", 1, 20)
+while diagPackets:
+    for i in range(len(diagPackets)):
+        print(
+            diagPackets[i].packetId,
+            ' ',
+            diagPackets[i].parsedText,
+            " ",
+            diagPackets[i].summaryText,
+        )
+    print("----------------------------------------------------")
+    diagPackets = diagService.getDataQueueItems("data", 1, 20)
 
-# diagPackets = diagService.getDataQueueItems("data", 300000, 2000)
-# for i in range(len(diagPackets)):
-#     # print(
-#     #     diagPackets[i].packetId,
-#     #     ' ',
-#     #     diagPackets[i].parsedText,
-#     #     " ",
-#     #     diagPackets[i].summaryText,
-#     # )
-#
-#     # print([f"{k}: {v}" for k, v in diagPackets[i].__dict__])
-#     pp(
-#         # diagPackets[i].packetId,
-#         # diagPackets[i].packetType,
-#         # diagPackets[i].timeStampData,
-#         # diagPackets[i].packetName,
-#         # diagPackets[i].summaryText,
-#         # diagPackets[i].binaryPayload,
-#         # diagPackets[i].ulogSource,
-#         diagPackets[i].__dict__
-#     )
-#     print("----------------------------------------------------")
+    # print([f"{k}: {v}" for k, v in diagPackets[i].__dict__])
+    # pp(
+        # diagPackets[i].packetId,
+        # diagPackets[i].packetType,
+        # diagPackets[i].timeStampData,
+        # diagPackets[i].packetName,
+        # diagPackets[i].summaryText,
+        # diagPackets[i].binaryPayload,
+        # diagPackets[i].ulogSource,
+        # diagPackets[i].__dict__
+    # )
 #
 # print("Total pkts", len(diagPackets))
 # diagService.removeDataQueue("data")

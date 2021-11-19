@@ -318,4 +318,4 @@ if __name__ == '__main__':
     folder = (
         r'C:\Users\FNH1SGH\Desktop\logs\dlf\20210830161604_Stream_ssr=mag_dur=30_sr=-1_hw=0\Data'
     )
-    folder_parsing(folder, skip_data=1)
+    # folder_parsing(folder, skip_data=1)

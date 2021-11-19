@@ -12,10 +12,11 @@ import re
 from datetime import datetime
 import ctypes
 import json
-
+import time
 from lib.ssc_drva.ssc_drva import SscDrvaParams
 from lib.adb.adb import ADB
 from lib import config as cfg
+from lib.quts.quts import logging_diag_hdf
 
 datetime_format = '%Y-%m-%d_%H-%M-%S'
 
@@ -41,14 +42,14 @@ def log_file_name(params_sets):
     else:
         log_name = 'Unknown'
 
-    for ps in params_sets:
-        if not ps:
+    for param_set in params_sets:
+        if not param_set:
             continue
         log_name += '_'
         log_name += '_'.join(
             [
                 f'{SscDrvaParams.valid_keys_and_sort.get(k, "unknowntag")}={v}'
-                for k, v in ps.items()
+                for k, v in param_set.items()
             ]
         )
     log_time = f'{datetime.now().strftime(datetime_format)}'
@@ -71,15 +72,6 @@ def valid_csv_name(csv_name):
         return True if m else False
 
 
-def da_test_csv_files_in(folder):
-    csv_data_logs = []
-    for par, dirs, files in os.walk(folder):
-        csv_data_logs += [
-            os.path.join(par, f) for f in files if valid_csv_name(f)
-        ]
-    return csv_data_logs
-
-
 def imu_bias_values(productname, sensor):
     if not sensor:
         return
@@ -89,11 +81,31 @@ def imu_bias_values(productname, sensor):
     cat = ADB().adb_cat(biasfile)
     json_buffer = json.loads(cat.decode())
     root = list(json_buffer.keys())[0]
-    return (
-        int(json_buffer[root]['x']['ver']),
-        int(json_buffer[root]['y']['ver']),
-        int(json_buffer[root]['z']['ver']),
+    return int(json_buffer[root]['x']['ver']), \
+           int(json_buffer[root]['y']['ver']),\
+           int(json_buffer[root]['z']['ver']),
+
+
+def collect_csvs(ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, param_sets):
+    filename = rf"C:\temp\testlog\{log_file_name(param_sets)}.hdf"
+    ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(param_sets=param_sets)
+    with logging_diag_hdf(quts_dev_mgr, filename):
+        ssc_drva.ssc_drva_run(ssc_drva_cmd)
+    qseevt.set_hdffile_text(filename)
+    qseevt.set_sensor_info_file_text(
+        info_file=sensor_info_txt
     )
+    qseevt.run_log_analysis()
+    while not qseevt.analyze_complete():
+        time.sleep(0.1)
+    parsed_folder = os.path.splitext(filename)[0]
+    csv_data_logs = []
+    for par, dirs, files in os.walk(parsed_folder):
+        csv_data_logs += [
+            os.path.join(par, f) for f in files if valid_csv_name(f)
+        ]
+
+    return csv_data_logs
 
 
 if __name__ == "__main__":

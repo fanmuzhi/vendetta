@@ -122,9 +122,7 @@ class FacTest(Enum):
 
 if __name__ == '__main__':
     # sensors = [Sensor.acc.value, Sensor.gyr.value]
-    a = [res_idx_dict[sensor.value] for sensor in [Sensor.acc, Sensor.gyr]]
-    print(a)
-    print(list(zip(*a)))
+    print(FacTest(0).name)
     # for sensor in sensors:
     #     res_idx_vals_list.append()
     #

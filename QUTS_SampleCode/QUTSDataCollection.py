@@ -659,7 +659,7 @@ def execTest(quts_client):
         FTMCommand(diagService)
 
     print("FTM commands sent")
-    diagPackets = diagService.getDataQueueItems(dataqueueName, 20, 500)
+    diagPackets = diagService.getDataQueueItems(dataqueueName, 2, 20)
     totalCount += len(diagPackets)
     for i in range(len(diagPackets)):
         print(

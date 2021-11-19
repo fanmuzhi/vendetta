@@ -11,7 +11,7 @@ import logging
 import os
 import subprocess
 import time
-
+import json
 
 class ADB:
     """
@@ -138,6 +138,19 @@ class ADB:
         cmd = ['ssc_sensor_info']
         ret = self.adb_shell_run(cmd, stdout=subprocess.PIPE, encoding='utf-8', check=True, timeout=60)
         return ret.stdout
+
+    def imu_bias_values(self, productname, sensor):
+        if not sensor:
+            return
+        bias_folder = r'mnt/vendor/persist/sensors/registry/registry'
+        biasfile = rf'{bias_folder}/{productname}_0_platform.{sensor}.fac_cal.bias'
+
+        text = self.adb_cat(biasfile)
+        json_buffer = json.loads(text.decode())
+        root = list(json_buffer.keys())[0]
+        return int(json_buffer[root]['x']['ver']), \
+               int(json_buffer[root]['y']['ver']), \
+               int(json_buffer[root]['z']['ver']),
 
 
 if __name__ == '__main__':

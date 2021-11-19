@@ -243,7 +243,7 @@ function filterTable(elem) { // eslint-disable-line no-unused-vars
 }
 </script>
     <h1>report.html</h1>
-    <p>Report generated on 15-Nov-2021 at 14:42:05 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a> v3.1.1</p>
+    <p>Report generated on 19-Nov-2021 at 15:02:58 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a> v3.1.1</p>
     <h2>Environment</h2>
     <table id="environment">
       <tr>
@@ -262,8 +262,8 @@ function filterTable(elem) { // eslint-disable-line no-unused-vars
         <td>Python</td>
         <td>3.8.11</td></tr></table>
     <h2>Summary</h2>
-    <p>2 tests ran in 29.00 seconds. </p>
-    <p class="filter" hidden="true">(Un)check the boxes to filter the results.</p><input checked="true" class="filter" data-test-result="passed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="passed">2 passed</span>, <input checked="true" class="filter" data-test-result="skipped" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="skipped">2 skipped</span>, <input checked="true" class="filter" data-test-result="failed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="failed">0 failed</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="error">0 errors</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xfailed">0 expected failures</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xpassed">0 unexpected passes</span>
+    <p>6 tests ran in 53.92 seconds. </p>
+    <p class="filter" hidden="true">(Un)check the boxes to filter the results.</p><input checked="true" class="filter" data-test-result="passed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="passed">5 passed</span>, <input checked="true" class="filter" data-test-result="skipped" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="skipped">28 skipped</span>, <input checked="true" class="filter" data-test-result="failed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="failed">1 failed</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="error">0 errors</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xfailed">0 expected failures</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xpassed">0 unexpected passes</span>
     <h2>Results</h2>
     <table id="results-table">
       <thead id="results-table-head">
@@ -274,39 +274,315 @@ function filterTable(elem) { // eslint-disable-line no-unused-vars
           <th class="sortable links" col="links">Links</th></tr>
         <tr hidden="true" id="not-found-message">
           <th colspan="4">No results found. Try to check the filters</th></tr></thead>
+      <tbody class="failed results-table-row">
+        <tr>
+          <td class="col-result">Failed</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestFactoryTest::test_factory_test[accel-Calibration]</td>
+          <td class="col-duration">9.09</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">self = &lt;testcases.QualcommSeeDriverTests.test_imu_driver.TestFactoryTest object at 0x000001DE4A570D30&gt;, ssc_drva = &lt;lib.ssc_drva.ssc_drva.SscDrvaTest object at 0x000001DE4A570E20&gt;<br/>quts_diag_service = &lt;DiagService.DiagService.Client object at 0x000001DE4A570A00&gt;, data_queue = &#x27;data&#x27;, sensor = &#x27;accel&#x27;, factest = 2<br/><br/>    @pytest.mark.parametrize(<br/>        &#x27;factest&#x27;, fac_tests, ids=[cfg.FacTest(fac_test).name for fac_test in fac_tests]<br/>    )<br/>    @pytest.mark.parametrize(&#x27;sensor&#x27;, sensors, ids=sensors)<br/>    def test_factory_test(<br/>        self, ssc_drva, quts_diag_service, data_queue, sensor, factest<br/>    ):<br/>        param_sets = ({&#x27;sensor&#x27;: sensor, &#x27;factory_test&#x27;: factest, &#x27;duration&#x27;: fac_test_duration}, None)<br/>        prev_biasvals = imu_bias_values(productname, sensor)<br/>        cmd = ssc_drva.set_ssc_drva_cmd(param_sets)<br/>        ssc_drva.ssc_drva_run(cmd)<br/>        diag_packets = quts_diag_service.getDataQueueItems(data_queue, 1, 20)<br/>        while diag_packets:<br/>            if re.search(rf&#x27;Test level {factest}: PASS&#x27;, diag_packets[0].summaryText):<br/>                with pytest.assume:<br/>                    assert 1<br/>                break<br/>            diag_packets = quts_diag_service.getDataQueueItems(data_queue, 1, 20)<br/>        else:<br/>            with pytest.assume:<br/>                assert 0, f&quot;key word f&#x27;Test level {factest}: PASS&#x27; not found &quot;<br/>        # with pytest.assume:<br/>        #     assert any(<br/>        #         [<br/>        #             re.search(rf&#x27;Test level {factest}: PASS&#x27;, diag_packet.summaryText)<br/>        #             for diag_packet in diag_packets<br/>        #         ]<br/>        #     ), f&quot;key word f&#x27;Test level {factest}: PASS&#x27; not found &quot;<br/>    <br/>        if factest == 2:<br/>            post_biasvals = imu_bias_values(productname, sensor)<br/>            with pytest.assume:<br/>&gt;               assert [pre + 1 for pre in prev_biasvals] == list(post_biasvals), \<br/>                    f&quot;bias values [x, y, z]: {prev_biasvals} is not updated after calibration&quot;<br/><span class="error">E               pytest_assume.plugin.FailedAssumption: </span><br/><span class="error">E               2 Failed Assumptions:</span><br/><span class="error">E               </span><br/><span class="error">E               testcases\QualcommSeeDriverTests\test_imu_driver.py:61: AssumptionFailure</span><br/><span class="error">E               &gt;&gt;	assert 0, f&quot;key word f&#x27;Test level {factest}: PASS&#x27; not found &quot;</span><br/><span class="error">E               AssertionError: key word f&#x27;Test level 2: PASS&#x27; not found </span><br/><span class="error">E               assert 0</span><br/><span class="error">E               </span><br/><span class="error">E               testcases\QualcommSeeDriverTests\test_imu_driver.py:73: AssumptionFailure</span><br/><span class="error">E               &gt;&gt;	assert [pre + 1 for pre in prev_biasvals] == list(post_biasvals), \</span><br/><span class="error">E               AssertionError: bias values [x, y, z]: (136, 136, 136) is not updated after calibration</span><br/><span class="error">E               assert [137, 137, 137] == [136, 136, 136]</span><br/><span class="error">E                 At index 0 diff: 137 != 136</span><br/><span class="error">E                 Full diff:</span><br/><span class="error">E                 - [136, 136, 136]</span><br/><span class="error">E                 ?    ^    ^    ^</span><br/><span class="error">E                 + [137, 137, 137]</span><br/><span class="error">E                 ?    ^    ^    ^</span><br/><br/>testcases\QualcommSeeDriverTests\test_imu_driver.py:73: FailedAssumption<br/> -----------------------------Captured stdout setup------------------------------ <br/>################# &lt;SubRequest &#x27;data_queue&#x27; for &lt;Function test_factory_test[accel-Calibration]&gt;&gt;
+<br/></div></td></tr></tbody>
       <tbody class="skipped results-table-row">
         <tr>
           <td class="col-result">Skipped</td>
-          <td class="col-name">cases/SeeDrcTestCases/test_sensor_streaming.py::TestSensorStream::test_sensor_streaming[collect_stream_data_files0]</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestDataStream::test_data_stream[accel-odr_25hz]</td>
           <td class="col-duration">0.00</td>
           <td class="col-links"></td></tr>
         <tr>
           <td class="extra" colspan="4">
-            <div class="empty log">No log output captured.</div></td></tr></tbody>
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 84, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
       <tbody class="skipped results-table-row">
         <tr>
           <td class="col-result">Skipped</td>
-          <td class="col-name">cases/SeeDrcTestCases/test_sensor_streaming.py::TestSensorStream::test_sensor_streaming[collect_stream_data_files1]</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestDataStream::test_data_stream[accel-odr_50hz]</td>
           <td class="col-duration">0.00</td>
           <td class="col-links"></td></tr>
         <tr>
           <td class="extra" colspan="4">
-            <div class="empty log">No log output captured.</div></td></tr></tbody>
-      <tbody class="passed results-table-row">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 84, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
         <tr>
-          <td class="col-result">Passed</td>
-          <td class="col-name">cases/SeeDrcTestCases/test_sensor_streaming.py::TestSensorFactoryTest::test_sensor_factorytest[param_sets0]</td>
-          <td class="col-duration">15.65</td>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestDataStream::test_data_stream[accel-odr_100hz]</td>
+          <td class="col-duration">0.00</td>
           <td class="col-links"></td></tr>
         <tr>
           <td class="extra" colspan="4">
-            <div class="empty log">No log output captured.</div></td></tr></tbody>
-      <tbody class="passed results-table-row">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 84, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
         <tr>
-          <td class="col-result">Passed</td>
-          <td class="col-name">cases/SeeDrcTestCases/test_sensor_streaming.py::TestSensorFactoryTest::test_sensor_factorytest[param_sets1]</td>
-          <td class="col-duration">11.51</td>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestDataStream::test_data_stream[accel-odr_200hz]</td>
+          <td class="col-duration">0.00</td>
           <td class="col-links"></td></tr>
         <tr>
           <td class="extra" colspan="4">
-            <div class="empty log">No log output captured.</div></td></tr></tbody></table></body></html>
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 84, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestDataStream::test_data_stream[accel-odr_max]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 84, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestDataStream::test_data_stream[accel-odr_sweep_ascend]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 84, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestDataStream::test_data_stream[gyro-odr_25hz]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 84, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestDataStream::test_data_stream[gyro-odr_50hz]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 84, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestDataStream::test_data_stream[gyro-odr_100hz]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 84, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestDataStream::test_data_stream[gyro-odr_200hz]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 84, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestDataStream::test_data_stream[gyro-odr_max]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 84, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestDataStream::test_data_stream[gyro-odr_sweep_ascend]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 84, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestConcurrency::test_internal_concurrency[accel-odr_max-odr_min]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 152, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestConcurrency::test_internal_concurrency[accel-odr_sweep_descend-odr_sweep_random]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 152, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestConcurrency::test_internal_concurrency[gyro-odr_max-odr_min]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 152, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestConcurrency::test_internal_concurrency[gyro-odr_sweep_descend-odr_sweep_random]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 152, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestConcurrency::test_external_concurrency[accel-gyro-odr_max-odr_min]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 223, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestConcurrency::test_external_concurrency[accel-gyro-odr_max-odr_sweep_descend]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 223, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestConcurrency::test_external_concurrency[accel-gyro-odr_min-odr_sweep_random]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 223, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestConcurrency::test_external_concurrency[accel-gyro-odr_sweep_ascend-odr_sweep_random]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 223, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestConcurrency::test_external_concurrency[gyro-accel-odr_max-odr_min]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 223, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestConcurrency::test_external_concurrency[gyro-accel-odr_max-odr_sweep_descend]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 223, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestConcurrency::test_external_concurrency[gyro-accel-odr_min-odr_sweep_random]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 223, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestConcurrency::test_external_concurrency[gyro-accel-odr_sweep_ascend-odr_sweep_random]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 223, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestConcurrency::test_internal_stream_factorytest_concurrency[accel-odr_max-Calibration]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 299, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestConcurrency::test_internal_stream_factorytest_concurrency[accel-odr_max-Connectivity]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 299, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestConcurrency::test_internal_stream_factorytest_concurrency[gyro-odr_max-Calibration]</td>
+          <td class="col-duration">0.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 299, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="skipped results-table-row">
+        <tr>
+          <td class="col-result">Skipped</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestConcurrency::test_internal_stream_factorytest_concurrency[gyro-odr_max-Connectivity]</td>
+          <td class="col-duration">0.01</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log">(&#x27;C:\\PythonProjects\\Vendetta\\testcases\\QualcommSeeDriverTests\\test_imu_driver.py&#x27;, 299, &#x27;Skipped: unconditional skip&#x27;)<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestFactoryTest::test_factory_test[accel-HardwareSelfTest]</td>
+          <td class="col-duration">10.25</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> -----------------------------Captured stdout setup------------------------------ <br/>################# &lt;SubRequest &#x27;data_queue&#x27; for &lt;Function test_factory_test[accel-HardwareSelfTest]&gt;&gt;
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestFactoryTest::test_factory_test[accel-Connectivity]</td>
+          <td class="col-duration">7.99</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> -----------------------------Captured stdout setup------------------------------ <br/>################# &lt;SubRequest &#x27;data_queue&#x27; for &lt;Function test_factory_test[accel-Connectivity]&gt;&gt;
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestFactoryTest::test_factory_test[gyro-HardwareSelfTest]</td>
+          <td class="col-duration">8.04</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> -----------------------------Captured stdout setup------------------------------ <br/>################# &lt;SubRequest &#x27;data_queue&#x27; for &lt;Function test_factory_test[gyro-HardwareSelfTest]&gt;&gt;
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestFactoryTest::test_factory_test[gyro-Calibration]</td>
+          <td class="col-duration">8.74</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> -----------------------------Captured stdout setup------------------------------ <br/>################# &lt;SubRequest &#x27;data_queue&#x27; for &lt;Function test_factory_test[gyro-Calibration]&gt;&gt;
+<br/></div></td></tr></tbody>
+      <tbody class="passed results-table-row">
+        <tr>
+          <td class="col-result">Passed</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestFactoryTest::test_factory_test[gyro-Connectivity]</td>
+          <td class="col-duration">8.00</td>
+          <td class="col-links"></td></tr>
+        <tr>
+          <td class="extra" colspan="4">
+            <div class="log"> -----------------------------Captured stdout setup------------------------------ <br/>################# &lt;SubRequest &#x27;data_queue&#x27; for &lt;Function test_factory_test[gyro-Connectivity]&gt;&gt;
+<br/></div></td></tr></tbody></table></body></html>

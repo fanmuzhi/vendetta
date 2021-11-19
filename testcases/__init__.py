@@ -3,6 +3,6 @@
 """
 # Description:
 """
-__filename__ = "cases"
+__filename__ = "testcases"
 __version__ = "init"
 __author__ = "@henry.fan"

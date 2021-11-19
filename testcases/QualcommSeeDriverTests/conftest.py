@@ -16,19 +16,15 @@ import pytest
 # import yaml
 
 import lib.seevt.seevt
-from lib.adb.adb import ADB
+# from lib.adb.adb import ADB
 from lib.ssc_drva.ssc_drva import SscDrvaTest
 from lib.quts.quts import *
 from lib.seevt.seevt import Qseevt
 from lib.sensor_file.sensor_file import FacCalBias
 from lib.utils import *
 
-# myadb = ADB()
 
-# common fixtures
-
-
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='session', autouse=True)
 def isadmin():
     if is_admin():
         return True
@@ -37,21 +33,12 @@ def isadmin():
 
 
 # adb fixtures
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="session", autouse=True)
 def adb():
     adb = ADB()
+    adb.adb_root()
     yield adb
     del adb
-
-
-@pytest.fixture(scope='package')
-def adb_root(adb):
-    adb.adb_root()
-
-
-@pytest.fixture(scope='package')
-def adb_devices():
-    adb.adb_devices()
 
 
 # ssc_drva fixtures
@@ -61,13 +48,12 @@ def ssc_drva(adb):
     yield ssc_drva
     del ssc_drva
 
-
-@pytest.fixture(scope="package")
-def ssc_drva_with_logging(generate_ssc_drva_hdf_log, ssc_drva, request):
-    param_sets = request.param
-    ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(param_sets=param_sets)
-    ssc_drva.ssc_drva_run(ssc_drva_cmd)
-    return None
+# @pytest.fixture(scope="package")
+# def ssc_drva_with_logging(generate_ssc_drva_hdf_log, ssc_drva, request):
+#     param_sets = request.param
+#     ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(param_sets=param_sets)
+#     ssc_drva.ssc_drva_run(ssc_drva_cmd)
+#     return None
 
 
 @pytest.fixture(scope='package')
@@ -93,7 +79,9 @@ def quts_set_all_callbacks(quts_client):
 
 
 @pytest.fixture(scope='function')
-def data_queue(quts_diag_service, queuename="data"):
+def data_queue(quts_diag_service, request):
+    print('#################', request)
+    queuename = 'data'
     items = dict()
     items[Common.ttypes.DiagPacketType.LOG_PACKET] = log_packet_filter_item
     items[Common.ttypes.DiagPacketType.EVENT] = event_filter_item
@@ -101,8 +89,8 @@ def data_queue(quts_diag_service, queuename="data"):
     error_code = create_data_queue_for_monitoring(quts_diag_service, items, queue_name=queuename)
     if error_code != 0:
         pytest.exit("Error  creating data queue error code: {error_code}")
-    else:
-        print("Data queue Created")
+    # else:
+    #     print("Data queue Created")
     yield queuename
     quts_diag_service.removeDataQueue(queuename)
     del items
@@ -255,23 +243,72 @@ def sensor_info_txt(adb):
         pytest.exit('Cannot get ssc_sensor_info text')
 
 
-@pytest.fixture(scope='function')
-def collect_stream_data_files(ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, request):
-    param_sets = request.param
-    filename = rf"C:\temp\testlog\{log_file_name(param_sets)}.hdf"
+def param_to_ids(param_sets):
+    ids = []
+    for param_set in param_sets:
+        sensor0, samplerate0 = param_set[0]['sensor'], param_set[0]['sample_rate']
+        id_str = f'{sensor0}-{samplerate0}'
+        if len(param_set) >= 2:
+            sensor1, samplerate1 = param_set[1]['sensor'], param_set[1]['sample_rate']
 
-    ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(param_sets=param_sets)
-    with logging_diag_hdf(quts_dev_mgr, filename):
-        ssc_drva.ssc_drva_run(ssc_drva_cmd)
-    qseevt.set_hdffile_text(filename)
-    qseevt.set_sensor_info_file_text(
-        info_file=sensor_info_txt
-    )
-    qseevt.run_log_analysis()
-    while not qseevt.analyze_complete():
-        time.sleep(0.1)
-    parsed_folder = os.path.splitext(filename)[0]
-    return da_test_csv_files_in(parsed_folder)
+            id_str += f' {sensor1}-{samplerate1}'
+        ids.append(id_str)
+    return ids
+
+
+@pytest.fixture(scope='function', ids=param_to_ids)
+def param_sets(request):
+    sensor_pair = request.param[0]
+    sample_rate_pair = request.param[1]
+    # duration = request.param.get('duration', 5)
+    duration = (5, 5) if len(request.param) <= 2 else request.param[2]
+    param_sets = []
+    for i in range(len(sensor_pair)):
+        param_i = {
+                'sensor': sensor_pair[i],
+                'sample_rate': sample_rate_pair[i],
+                'duration': duration[i],
+            }
+        param_sets.append(param_i)
+    yield param_sets
+
+
+test_data = {
+        'sensors': ['accel', 'gyro'],
+        'sample_rates': [25, 50, 100, 200],
+        'durations': [5]
+    }
+
+
+#
+# @pytest.fixture(scope='function', params=test_data)
+# def stream_data_csv_files(ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, request):
+#     print(request.param)
+#     sensor = request.param['sensors']
+#     sample_rate = request.param['sample_rates']
+#     duration = request.param.get('duration', 5)
+#     param_sets = (
+#         {
+#             'sensor': sensor,
+#             'sample_rate': sample_rate,
+#             'duration': duration},
+#         None
+#     )
+#     csvs = collect_csvs(ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, param_sets)
+#     yield csvs
+#     # filename = rf"C:\temp\testlog\{log_file_name(param_sets)}.hdf"
+#     # ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(param_sets=param_sets)
+#     # with logging_diag_hdf(quts_dev_mgr, filename):
+#     #     ssc_drva.ssc_drva_run(ssc_drva_cmd)
+#     # qseevt.set_hdffile_text(filename)
+#     # qseevt.set_sensor_info_file_text(
+#     #     info_file=sensor_info_txt
+#     # )
+#     # qseevt.run_log_analysis()
+#     # while not qseevt.analyze_complete():
+#     #     time.sleep(0.1)
+#     # parsed_folder = os.path.splitext(filename)[0]
+#     # return collect_csvs(parsed_folder)
 
 
 @pytest.fixture(scope='function')
@@ -286,6 +323,11 @@ def bias(request):
     # biasver_vals = bias.read_imu_bias_values(sensor)
     yield bias
     del bias, productname, sensor, bias_folder, biasfile
+
+
+@pytest.fixture(scope='function')
+def test_case_info():
+    pass
 
 
 
