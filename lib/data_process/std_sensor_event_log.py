@@ -30,7 +30,7 @@ INTERVAL_COEFF_L, INTERVAL_COEFF_H = 0.0, 1.8
 
 result = {True: 'Pass', False: 'Fail', None: 'N/A'}
 axises = ['x', 'y', 'z']
-unit = {'accel': 'm/s^2', 'gyro': 'rad/s', 'mag': 'µT'}
+units = {'accel': 'm/s^2', 'gyro': 'rad/s', 'mag': 'µT'}
 
 data_bases = {
     'accel': {
@@ -104,6 +104,8 @@ class SeeDrvLog:
         self.odr = self.get_info_odr()
         self.dest_sensor = self.get_info_dest_sensor()
         self.data_df = self.get_data_df(skip_data)
+        self.stats = self.data_df.describe()
+        self.unit = units[self.sensor]
 
         if len(self.data_df) > 2:
             self.enough_data_exists = True
@@ -135,8 +137,6 @@ class SeeDrvLog:
             return calc_actual_odr(float(match.groups()[0]))
         else:
             return None
-        # logger.warning(f'No {e} found in {self.csv_file}')
-        # return None
 
     def get_info_dest_sensor(self):
         return self.info_df.loc['#Destination.Sensor'].iat[0]
@@ -162,15 +162,6 @@ class SeeDrvLog:
         )
 
         return df
-
-    # def extend_interval_series_cols(self):
-    #     self.data_df = self.data_df.assign(
-    #         log_time=self.time_data(self.data_df['Log Timestamp (19.2MHz Ticks)']),
-    #         time=self.time_data(self.data_df['Timestamp (19.2MHz Ticks)']),
-    #     )
-    #     self.data_df = self.data_df.assign(
-    #         log_interval=self.data_df.log_time.diff(), interval=self.data_df.time.diff()
-    #     )
 
     def get_mean(self, column_name) -> float:
         value = self.data_df[column_name].mean()
@@ -201,23 +192,15 @@ class SeeDrvLog:
 
     def get_col_stats(self, col_name):
         return self.data_df[col_name].describe()
-        # interval_min = self.get_min(col_name)
-        # interval_max = self.get_max(col_name)
-        # limit_l = interval * coeff_l if not fac_during_streaming(self.testcase) else 0
-        # limit_h = interval * coeff_h if not fac_during_streaming(self.testcase) else 600
-        # rslt = result[limit_l <= interval_min <= interval_max <= limit_h]
-        # return {
-        #     f'time_interval(ms) [{limit_l} <= {interval_min} <= {interval_max} <= {limit_h}]': rslt
-        # }
 
     def get_range_result(self, axis):
         sensorbase = data_bases.get(self.sensor).get(axis)
         sensoroffset = data_offsets.get(self.sensor).get(axis)
         min_val = self.get_min(
-            f'{self.sensor.capitalize()} {axis.upper()} ({unit.get(self.sensor)})'
+            f'{self.sensor.capitalize()} {axis.upper()} ({units.get(self.sensor)})'
         )
         max_val = self.get_max(
-            f'{self.sensor.capitalize()} {axis.upper()} ({unit.get(self.sensor)})'
+            f'{self.sensor.capitalize()} {axis.upper()} ({units.get(self.sensor)})'
         )
         rslt = result[
             sensorbase - sensoroffset <= min_val <= max_val <= sensorbase + sensoroffset
@@ -229,27 +212,10 @@ class SeeDrvLog:
     def get_stddev_result(self, axis):
         stddev_limit = stddev_limits.get(self.sensor).get(axis)
         stddev = self.get_std(
-            f'{self.sensor.capitalize()} {axis.upper()} ({unit.get(self.sensor)})'
+            f'{self.sensor.capitalize()} {axis.upper()} ({units.get(self.sensor)})'
         )
         rslt = result[0 <= stddev <= stddev_limit]
         return {f'AXIS_{axis}_std_dev [0 <= {stddev} <= {stddev_limit}]': rslt}
-
-    def get_log_result(self):
-        ret = {'file': os.path.basename(self.csv_file)}
-        ret.update(self.get_time_interval_result())
-        for axis in axises:
-            ret.update(self.get_range_result(axis.lower()))
-        for axis in axises:
-            ret.update(self.get_stddev_result(axis.lower()))
-        return ret
-
-    # def plot_sensor_data(self, axis=('X', 'Y', 'Z')):
-    #     cols = [
-    #         f'{self.sensor.capitalize()} {ax} ({unit.get(self.sensor)})' for ax in axis
-    #     ]
-    #     cols.append('time')
-    #     self.data_df[cols].plot(x='time')
-    #     plt.show()
 
     @staticmethod
     def valid_csv_name(csv_name):
@@ -267,45 +233,34 @@ class SeeDrvLog:
             m = re.match(pattern, csv_name)
             return True if m else False
 
+    def check_odr(self):
+        col_name = 'interval'
+        intv = calc_interval_ms(self.odr)
+        l_limit = 0 * intv
+        h_limit = 1.8 * intv
+        intv_min = self.stats[col_name]['min']
+        intv_max = self.stats[col_name]['max']
+        assert (
+                l_limit <= self.stats[col_name]['min'] < self.stats[col_name]['max'] < h_limit
+        ), f'{self.sensor} time interval [{intv_min}, {intv_max}] data out of range [{l_limit} {h_limit}] in <{self.csv_file}>'
 
-# def folder_parsing(folder, skip_data=0, testcase=None):
-#     rslt = []
-#     for par, dirs, files in os.walk(folder):
-#         for data_log in [
-#             os.path.join(par, f) for f in files if SeeDrvLog.valid_csv_name(f)
-#         ]:
-#             try:
-#                 see_log = SeeDrvLog(data_log, skip_data=skip_data, testcase=testcase)
-#                 if not see_log.dest_sensor == 'da_test':
-#                     continue
-#                 if not see_log.enough_data_exists:
-#                     logger.warning(f'No enough data length exists, skipped')
-#                     continue
-#                 if not see_log.odr:
-#                     logger.warning(f'ODR information not found, skipped')
-#                     continue
-#                 logger.info(f'analyzing csv: {os.path.join(par, data_log)}')
-#                 rslt.append(see_log.get_log_result())
-#             except IndexError as e:
-#                 logger.warning(e.args)
-#                 continue
-#             except KeyError as e:
-#                 logger.warning(f'{e.args[0]} not found, skipped')
-#                 continue
-#     return rslt
+    def check_data_range(self, col_name, axis):
+        # col_name = f'{self.sensor.capitalize()} {axis.upper()} ({self.unit})'
+        l_limit = data_bases[self.sensor][axis] - data_offsets[self.sensor][axis]
+        h_limit = data_bases[self.sensor][axis] + data_offsets[self.sensor][axis]
+        data_min, data_max = self.stats[col_name]['min'], self.stats[col_name]['max']
+        assert (
+                l_limit <= data_min < data_max <= h_limit
+        ), f"{col_name} [{data_min}, {data_max}] out of range [{l_limit}, {h_limit}] in {self.csv_file}"
 
-
-# def screen_failures(d):
-#     if isinstance(d, dict):
-#         for k, v in d.items():
-#             screen_failures(v)
-#     elif isinstance(d, list):
-#         for x in d:
-#             screen_failures(x)
-#     elif isinstance(d, bool):
-#         pass
-#     elif isinstance(d, str):
-#         pass
+    def check_data_stddev(self, col_name, axis):
+        stddev = self.stats[col_name]['std']
+        l_limit = 0
+        # h_limit = 0
+        h_limit = stddev_limits[self.sensor][axis]
+        assert (
+                l_limit <= stddev <= h_limit
+        ), f"{self.sensor} {axis} axis std_dev {stddev} exceeds limit {h_limit} in {self.sensor}"
 
 
 if __name__ == '__main__':

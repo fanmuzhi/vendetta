@@ -205,8 +205,12 @@ def create_filters(all_filters):
     return diag_packet_filter
 
 
-def create_data_queue_for_monitoring(diag_service, all_filters, queue_name):
+def create_data_queue_for_monitoring(diag_service, queue_name):
     ### Createa data Queue. Reading will be done in the callback.
+    all_filters = dict()
+    all_filters[Common.ttypes.DiagPacketType.LOG_PACKET] = log_packet_filter_item
+    all_filters[Common.ttypes.DiagPacketType.EVENT] = event_filter_item
+    all_filters[Common.ttypes.DiagPacketType.DEBUG_MSG] = debug_msg_filter_item
     diag_packet_filter = create_filters(all_filters)
 
     return_obj_diag = Common.ttypes.DiagReturnConfig()
