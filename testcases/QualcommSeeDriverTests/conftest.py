@@ -7,40 +7,32 @@ __filename__ = "conftest.py"
 __version__ = "init"
 __author__ = "@henry.fan"
 
-# import contextlib
-# import os
-
-# import sys
-# import time
-import itertools
 import pytest
-
-# import yaml
-
+import itertools
+import subprocess
+import xml.dom.minidom
 import lib.seevt.seevt
 
-# from lib.adb.adb import ADB
 from lib.ssc_drva.ssc_drva import SscDrvaTest
 from lib.quts.quts import *
 from lib.seevt.seevt import Qseevt
-from lib.sensor_file.sensor_file import FacCalBias
 from lib.utils import *
-from testcases.QualcommSeeDriverTests import test_imu_driver
-productname = test_imu_driver.productname
-n_hw = test_imu_driver.n_hw
-hwid = test_imu_driver.hwid
-sensor_list = test_imu_driver.sensor_list
+
+productname = 'bmi3x0'
+n_hw = 1
+hwid = list(range(n_hw))
+sensor_list = ['accel', 'gyro']
 # sensor_list = ['accel']
-streamtest_odr_list = test_imu_driver.streamtest_odr_list
+streamtest_odr_list = [-2, 50, 100, 200, -1, -3.0]
 # streamtest_odr_list = [-2, 50]
-factest_type_list = test_imu_driver.factest_type_list
-sensor_streamtest_dur = test_imu_driver.sensor_streamtest_dur
-sensor_factest_dur = test_imu_driver.sensor_factest_dur
-ssc_drva_delay = test_imu_driver.ssc_drva_delay
-null_params = test_imu_driver.null_params
+factest_type_list = [1, 2, 3]
+sensor_streamtest_dur = 30
+sensor_factest_dur = 5
+ssc_drva_delay = 2
+null_params = [None]
 
 
-used_drva_keys = [
+using_ssc_drva_keys = [
     'sensor',
     'duration',
     'sample_rate',
@@ -72,11 +64,26 @@ def setup_param_sets(params_list):
      """
     param_sets = [dict(), dict()]
     for k, v in params_list.items():
-        if v:
+        if v is not None:
             for i in range(2):
-                if v[i]:
+                if v[i] is not None:
                     param_sets[i].update({k: v[i]})
     return param_sets
+
+
+def test_case_id_str(pairs):
+    id_word_list = []
+    for i in range(2):
+        if pairs['sensor'][i]:
+            id_word_list.append(pairs['sensor'][i])
+        if pairs['sample_rate'] and pairs['sample_rate'][i] is not None:
+            id_word_list.append(cfg.Odr(pairs['sample_rate'][i]).name)
+        if pairs['factory_test'] and pairs['factory_test'][i] is not None:
+            id_word_list.append(cfg.FacTest(pairs['factory_test'][i]).name)
+        if pairs['hw_id'] and pairs['hw_id'][i] is not None:
+            id_word_list.append(f"hw{pairs['hw_id'][i]}")
+    id = '-'.join(id_word_list)
+    return id
 
 
 def match_summary_text(diag_service, re_pattern, data_queue='data'):
@@ -92,7 +99,10 @@ def match_summary_text(diag_service, re_pattern, data_queue='data'):
 
 
 def pytest_generate_tests(metafunc):
+    fixturename = ''
+    params_list = []
     if "factorytest" in metafunc.fixturenames:
+        fixturename = 'factorytest'
         params_sensor = list(itertools.product(sensor_list, [None]))
         params_factest_type = list(itertools.product(factest_type_list, [None]))
         params_odr = null_params
@@ -110,20 +120,20 @@ def pytest_generate_tests(metafunc):
                 params_delay,
             )
         )
-        params_sets_list = [
-            setup_param_sets(dict(zip(used_drva_keys, param))) for param in params_list
-        ]
-
-        ids = [
-            f'{params_set[0]["sensor"]}-{cfg.FacTest(params_set[0]["factory_test"]).name}'
-            for params_set in params_sets_list
-        ]
-        metafunc.parametrize("factorytest", params_sets_list, ids=ids, indirect=False)
 
     if "streamtest" in metafunc.fixturenames:
+        fixturename = 'streamtest'
         params_sensor = list(itertools.product(sensor_list, [None]))
         params_dur = list(itertools.product([sensor_streamtest_dur], [None]))
-        params_odr = list(itertools.product(streamtest_odr_list, [None]))
+        if "change_registry_res_value" in metafunc.fixturenames:
+            params_odr = list(
+                itertools.product(
+                    [cfg.Odr.odr_max.value, cfg.Odr.odr_min.value], [None]
+                )
+            )
+        else:
+            params_odr = list(itertools.product(streamtest_odr_list, [None]))
+
         if "dynarange" in metafunc.fixturenames:
             params_sensor = list(itertools.product(sensor_list, [None]))
         params_factest_type = null_params
@@ -139,17 +149,9 @@ def pytest_generate_tests(metafunc):
                 params_delay,
             )
         )
-        params_sets_list = [
-            setup_param_sets(dict(zip(used_drva_keys, param))) for param in params_list
-        ]
-        ids = [
-            f'{params_set[0]["sensor"]}-{cfg.Odr(params_set[0]["sample_rate"]).name}'
-            for params_set in params_sets_list
-        ]
-
-        metafunc.parametrize("streamtest", params_sets_list, ids=ids)
 
     if "intern_conc_streamtest" in metafunc.fixturenames:
+        fixturename = 'intern_conc_streamtest'
         params_sensor = [tuple(itertools.repeat(sensor, 2)) for sensor in sensor_list]
         params_dur = [(30, 30)]
         params_odr = [(-1, -2), (-3.1, -3.2)]
@@ -166,18 +168,9 @@ def pytest_generate_tests(metafunc):
                 params_delays,
             )
         )
-        params_sets_list = [
-            setup_param_sets(dict(zip(used_drva_keys, param))) for param in params_list
-        ]
-        ids = [
-            f'{params_set[0]["sensor"]}-{cfg.Odr(params_set[0]["sample_rate"]).name}'
-            + " "
-            + f'{params_set[1]["sensor"]}-{cfg.Odr(params_set[1]["sample_rate"]).name}'
-            for params_set in params_sets_list
-        ]
-        metafunc.parametrize("intern_conc_streamtest", params_sets_list, ids=ids)
 
     if "intern_conc_factest" in metafunc.fixturenames:
+        fixturename = 'intern_conc_factest'
         params_sensor = [tuple(itertools.repeat(sensor, 2)) for sensor in sensor_list]
         params_odr = list(itertools.product([-1], [None]))
         params_factest_type = list(itertools.product([None], [1, 2]))
@@ -194,21 +187,9 @@ def pytest_generate_tests(metafunc):
                 params_delays,
             )
         )
-        params_sets_list = [
-            setup_param_sets(dict(zip(used_drva_keys, param))) for param in params_list
-        ]
-        ids = [
-            f'{params_set[0]["sensor"]}-{cfg.Odr(params_set[0]["sample_rate"]).name}'
-            + " "
-            + f'{params_set[1]["sensor"]}-{cfg.FacTest(params_set[1]["factory_test"]).name}'
-            for params_set in params_sets_list
-        ]
 
-        metafunc.parametrize("intern_conc_factest", params_sets_list, ids=ids)
     if "extern_conc_streamtest" in metafunc.fixturenames:
-        # if len(sensor_list) < 2:
-        #     metafunc.parametrize("extern_conc_streamtest", [])
-        #     return
+        fixturename = 'extern_conc_streamtest'
         params_sensor = list(itertools.permutations(sensor_list, 2))
         params_dur = null_params
         params_odr = [(-1, -2), (-1, -3.1), (-2, -3.2), (-3.0, -3.1)]
@@ -234,17 +215,12 @@ def pytest_generate_tests(metafunc):
                     )
                 )
             )
-        params_sets_list = [
-            setup_param_sets(dict(zip(used_drva_keys, param))) for param in params_list
-        ]
-        ids = [
-            f'{params_set[0]["sensor"]}-{cfg.Odr(params_set[0]["sample_rate"]).name}'
-            + " "
-            + f'{params_set[1]["sensor"]}-{cfg.Odr(params_set[1]["sample_rate"]).name}'
-            for params_set in params_sets_list
-        ]
-        print(params_sets_list)
-        metafunc.parametrize("extern_conc_streamtest", params_sets_list, ids=ids)
+    params_sets_list = [
+        setup_param_sets(dict(zip(using_ssc_drva_keys, param))) for param in params_list
+    ]
+    ids = [test_case_id_str(dict(zip(using_ssc_drva_keys, param))) for param in params_list]
+
+    metafunc.parametrize(fixturename, params_sets_list, ids=ids)
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -258,6 +234,9 @@ def isadmin():
 # adb fixtures
 @pytest.fixture(scope="session", autouse=True)
 def adb():
+    if not ADB.adb_devices():
+        pytest.exit("No ADB devices found")
+        # pytest.exit(ADB.adb_devices())
     adb = ADB()
     adb.adb_root()
     yield adb
@@ -271,21 +250,13 @@ def ssc_drva(adb):
     yield ssc_drva
     del ssc_drva
 
-
-# @pytest.fixture(scope="package")
-# def ssc_drva_with_logging(generate_ssc_drva_hdf_log, ssc_drva, request):
+#
+# @pytest.fixture(scope='package')
+# def run_ssc_drva_test(ssc_drva, request):
 #     param_sets = request.param
 #     ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(param_sets=param_sets)
 #     ssc_drva.ssc_drva_run(ssc_drva_cmd)
 #     return None
-
-
-@pytest.fixture(scope='package')
-def run_ssc_drva_test(ssc_drva, request):
-    param_sets = request.param
-    ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(param_sets=param_sets)
-    ssc_drva.ssc_drva_run(ssc_drva_cmd)
-    return None
 
 
 # quts fixtures
@@ -323,19 +294,21 @@ def quts_dev_mgr(quts_client):
     return dev_mgr
 
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="package", autouse=True)
 def quts_list_devices(quts_dev_mgr):
     device_list = quts_dev_mgr.getDeviceList()
-    return device_list
+    if not device_list:
+        pytest.exit("No device found")
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="function", autouse=True)
 def quts_list_services(quts_dev_mgr):
     services_list = quts_dev_mgr.getServicesList()
-    return services_list
+    if not services_list:
+        pytest.exit("No service found")
 
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="package", autouse=True)
 def quts_device_handle(quts_dev_mgr):
     device_handle = get_device_handle(quts_dev_mgr)
     if not device_handle:
@@ -344,11 +317,11 @@ def quts_device_handle(quts_dev_mgr):
     del device_handle
 
 
-@pytest.fixture(scope="package")
+@pytest.fixture(scope="package", autouse=True)
 def quts_list_protocals(quts_dev_mgr, quts_device_handle):
     protocol_handle = None
     if not get_diag_protocal_handle(quts_dev_mgr, quts_device_handle):
-        pytest.exit("No Qualcomm USB Composite Device Found")
+        pytest.exit("No Qualcomm USB Composite Protocal Found")
     yield protocol_handle
     del protocol_handle
 
@@ -361,6 +334,8 @@ def quts_device_service(quts_client, quts_device_handle):
             quts_device_handle,
         )
     )
+    if not dev_service:
+        pytest.exit("No Qualcomm USB Composite Device Found")
     dev_service.initializeService()
 
     yield dev_service
@@ -392,38 +367,8 @@ def quts_load_config(quts_diag_service):
         quts_diag_service.getLastError()
 
 
-@pytest.fixture(scope='function')
-def generate_ssc_drva_hdf_log(quts_dev_mgr, ssc_drva, request):
-    param_sets = request.param
-    filename = rf"C:\temp\testlog\{datetime_str()}.hdf"
-    ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(param_sets=param_sets)
-    with logging_diag_hdf(quts_dev_mgr, filename):
-        ssc_drva.ssc_drva_run(ssc_drva_cmd)
-    return filename
-
-
-@pytest.fixture(scope='function')
-def generate_ssc_drva_data_packet(quts_diag_service, ssc_drva, request):
-    param_sets = request.param
-    queuename = 'data'
-    ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(param_sets=param_sets)
-    with logging_data_queue(quts_diag_service, queuename):
-        ssc_drva.ssc_drva_run(ssc_drva_cmd)
-
-
-# @pytest.fixture(scope='function')
-# def generate_ssc_drva_hdf_and_data_packet(quts_dev_mgr, ssc_drva, request):
-#     param_sets = request.param
-#     ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(param_sets=param_sets)
-#     with logging_data_queue(quts_diag_service, "data", quts_diag_packet_filter, quts_return_obj_diag,):
-#         ssc_drva.ssc_drva_run(ssc_drva_cmd)
-
-
-# QSEEVT(qualcomm SEE verification tool) fixtures
-
-
 @pytest.fixture(scope='package')
-def qseevt(isadmin):
+def qseevt():
     seevt = Qseevt(lib.seevt.seevt.seevt_exe)
     seevt.run()
     seevt.enter_log_analysis_window()
@@ -434,18 +379,23 @@ def qseevt(isadmin):
     del seevt
 
 
-# @pytest.fixture(scope='package', autouse=True)
-# def qseevt_init_analysis_window(qseevt):
-#     qseevt.run()
-#     qseevt.enter_log_analysis_window()
-#     qseevt.set_sensor_info_file_text(
-#         info_file=r"C:\Users\FNH1SGH\Desktop\bmi320_sensor_info.txt"
-#     )
-#     yield qseevt
-#     qseevt.close()
-#
-
-# general test fixtures funcions
+@pytest.fixture(scope='package', autouse=True)
+def check_protos():
+    if not os.path.exists(cfg.seevt_protos_dir):
+        pytest.exit(
+            'No Protos imported for QSEEVT tool, please import .protos in QSEEVT first'
+        )
+    if not os.path.exists(r'C:\ProgramData\Qualcomm\Qualcomm_SEEVT\Protos.config'):
+        pytest.exit(
+            'No Protos imported for QSEEVT tool, please import .protos in QSEEVT first'
+        )
+    tree = xml.dom.minidom.parse(cfg.proto_config_file)
+    configuration = tree.documentElement
+    current_protos = configuration.getElementsByTagName("CurrentProtos")
+    if not current_protos or not current_protos[0].firstChild.data:
+        pytest.exit(
+            'No Protos imported for QSEEVT tool, please import .protos in QSEEVT first'
+        )
 
 
 @pytest.fixture(scope='package', autouse=True)
@@ -461,85 +411,49 @@ def sensor_info_txt(adb):
         pytest.exit('Cannot get ssc_sensor_info text')
 
 
-def param_to_ids(param_sets):
-    ids = []
-    for param_set in param_sets:
-        sensor0, samplerate0 = param_set[0]['sensor'], param_set[0]['sample_rate']
-        id_str = f'{sensor0}-{samplerate0}'
-        if len(param_set) >= 2:
-            sensor1, samplerate1 = param_set[1]['sensor'], param_set[1]['sample_rate']
-
-            id_str += f' {sensor1}-{samplerate1}'
-        ids.append(id_str)
-    return ids
-
-
-@pytest.fixture(scope='function', ids=param_to_ids)
-def param_sets(request):
-    sensor_pair = request.param[0]
-    sample_rate_pair = request.param[1]
-    # duration = request.param.get('duration', 5)
-    duration = (5, 5) if len(request.param) <= 2 else request.param[2]
-    param_sets = []
-    for i in range(len(sensor_pair)):
-        param_i = {
-            'sensor': sensor_pair[i],
-            'sample_rate': sample_rate_pair[i],
-            'duration': duration[i],
-        }
-        param_sets.append(param_i)
-    yield param_sets
+@pytest.fixture(scope='package', autouse=True)
+def sensor_registry(adb):
+    text = adb.adb_cat(
+        rf'/vendor/etc/sensors/config/{cfg.platform_code["hdk8350"]}_hdk_{productname}_0.json'
+    )
+    registry_dict = json.loads(text)
+    if not registry_dict:
+        pytest.exit('cannot load the registry file from the system')
+    yield registry_dict
+    del registry_dict
 
 
-test_data = {
-    'sensors': ['accel', 'gyro'],
-    'sample_rates': [25, 50, 100, 200],
-    'durations': [5],
-}
+@pytest.fixture(scope='package')
+def reset_origin_registry(adb, sensor_registry, hw_id=0):
+    yield
+    new_regi = sensor_registry.copy()
+    reg_file_name = rf'./{cfg.platform_code["hdk8350"]}_hdk_{productname}_{hw_id}.json'
+    with open(reg_file_name, 'w') as f:
+        json.dump(new_regi, f)
+    adb.update_registry_file(reg_file_name)
+    os.remove(reg_file_name)
+    print('origin registry reset')
 
 
-#
-# @pytest.fixture(scope='function', params=test_data)
-# def stream_data_csv_files(ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, request):
-#     print(request.param)
-#     sensor = request.param['sensors']
-#     sample_rate = request.param['sample_rates']
-#     duration = request.param.get('duration', 5)
-#     param_sets = (
-#         {
-#             'sensor': sensor,
-#             'sample_rate': sample_rate,
-#             'duration': duration},
-#         None
-#     )
-#     csvs = collect_csvs(ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, param_sets)
-#     yield csvs
-#     # filename = rf"C:\temp\testlog\{log_file_name(param_sets)}.hdf"
-#     # ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(param_sets=param_sets)
-#     # with logging_diag_hdf(quts_dev_mgr, filename):
-#     #     ssc_drva.ssc_drva_run(ssc_drva_cmd)
-#     # qseevt.set_hdffile_text(filename)
-#     # qseevt.set_sensor_info_file_text(
-#     #     info_file=sensor_info_txt
-#     # )
-#     # qseevt.run_log_analysis()
-#     # while not qseevt.analyze_complete():
-#     #     time.sleep(0.1)
-#     # parsed_folder = os.path.splitext(filename)[0]
-#     # return collect_csvs(parsed_folder)
-
-
-@pytest.fixture(scope='function')
-def bias(request):
-    param_sets = request.param
-    sensor = param_sets[0].get('sensor')
-
-    bias_folder = r'mnt/vendor/persist/sensors/registry/registry'
-    biasfile = rf'{bias_folder}/{productname}_0_platform.{sensor}.fac_cal.bias'
-    bias = FacCalBias(biasfile)
-    # biasver_vals = bias.read_imu_bias_values(sensor)
-    yield bias
-    del bias, productname, sensor, bias_folder, biasfile
+@pytest.fixture(scope='class')
+def change_registry_res_value(adb, sensor_registry, request, hw_id=0):
+    """
+    [
+        {'accel': 1, 'gyro': 2,},
+        {'accel': 2, 'gyro': 3,},
+    ]
+    :return:
+    """
+    new_regi = sensor_registry.copy()
+    for sensor, res_val in request.param.items():
+        new_regi[f'{productname}_{hw_id}'][f'.{sensor}']['.config']['res_idx'][
+            'data'
+        ] = str(res_val)
+    reg_file_name = rf'./{cfg.platform_code["hdk8350"]}_hdk_{productname}_{hw_id}.json'
+    with open(reg_file_name, 'w') as f:
+        json.dump(new_regi, f)
+    adb.update_registry_file(reg_file_name)
+    os.remove(reg_file_name)
 
 
 @pytest.fixture(scope='function')

@@ -17,6 +17,7 @@ import QmiService.constants
 import QmiService.ttypes
 import DeviceManager.ttypes
 
+
 def onMessage(level, location, title, description):
     print("Message Received {} {} ".format(title, description))
 
@@ -45,7 +46,7 @@ for item in deviceList:
     print(item)
 
 deviceId = 281474976710656
-#diagProtocol = 281492156579840
+# diagProtocol = 281492156579840
 diagProtocol = 0
 
 listOfProtocols = deviceManager.getProtocolList(deviceId)
@@ -57,12 +58,12 @@ serviceList = deviceManager.getServicesList()
 print("\n\nList of Services: ", serviceList)
 
 
-#diagProtocolHandle = 281496451547136
+# diagProtocolHandle = 281496451547136
 diagProtocolHandle = 0
 
-diagProtocolHandle = 562954248388608 # mdm
-#diagProtocolHandle = 281483566645248 # apq
-#281496451547136
+diagProtocolHandle = 562954248388608  # mdm
+# diagProtocolHandle = 281483566645248 # apq
+# 281496451547136
 
 
 # enum OperatingMode   -> codes for set operating mode
@@ -76,26 +77,30 @@ diagProtocolHandle = 562954248388608 # mdm
 # }
 
 
-
-ret = deviceManager.setOperatingMode(deviceId, diagProtocolHandle, DeviceManager.ttypes.OperatingMode.ONLINE)
+ret = deviceManager.setOperatingMode(
+    deviceId, diagProtocolHandle, DeviceManager.ttypes.OperatingMode.ONLINE
+)
 print("ret = ", ret)
 
 time.sleep(5)
-opMode = deviceManager.getOperatingMode(deviceId,diagProtocolHandle)
+opMode = deviceManager.getOperatingMode(deviceId, diagProtocolHandle)
 print("opMode = ", opMode)
 
-ret = deviceManager.setOperatingMode(deviceId, diagProtocolHandle, DeviceManager.ttypes.OperatingMode.LOW_POWER)
+ret = deviceManager.setOperatingMode(
+    deviceId, diagProtocolHandle, DeviceManager.ttypes.OperatingMode.LOW_POWER
+)
 print("ret = ", ret)
 time.sleep(5)
-opMode = deviceManager.getOperatingMode(deviceId,diagProtocolHandle)
+opMode = deviceManager.getOperatingMode(deviceId, diagProtocolHandle)
 print("opMode = ", opMode)
 
 
-
-ret = deviceManager.setOperatingMode(deviceId, diagProtocolHandle, DeviceManager.ttypes.OperatingMode.OFFLINE_DIGITAL)
+ret = deviceManager.setOperatingMode(
+    deviceId, diagProtocolHandle, DeviceManager.ttypes.OperatingMode.OFFLINE_DIGITAL
+)
 print("ret = ", ret)
 time.sleep(5)
-opMode = deviceManager.getOperatingMode(deviceId,diagProtocolHandle)
+opMode = deviceManager.getOperatingMode(deviceId, diagProtocolHandle)
 print("opMode = ", opMode)
 
 
@@ -103,37 +108,23 @@ chipname = deviceManager.getChipName(deviceId, diagProtocol)
 print("chipname = ", chipname)
 
 #
-status = deviceManager.checkSpc(deviceId, diagProtocol,"000000")
+status = deviceManager.checkSpc(deviceId, diagProtocol, "000000")
 print("spc (000000) status = ", status)
 
-print (deviceManager.getLastError())
+print(deviceManager.getLastError())
 status = deviceManager.checkSpc(deviceId, diagProtocol, "000001")
 print("spc (000001) status = ", status)
-print (deviceManager.getLastError())
+print(deviceManager.getLastError())
 
 chipname = deviceManager.getChipName(deviceId, diagProtocol)
 print("chipname = ", chipname)
 
 
-
-meid = deviceManager.getMeid(deviceId,0)
+meid = deviceManager.getMeid(deviceId, 0)
 print("meid = ", meid)
 
-imei = deviceManager.getImei(deviceId,0)
+imei = deviceManager.getImei(deviceId, 0)
 print("imei = ", imei)
 
 
-
-
-
-
-
-
-
-
 print("All Done")
-
-
-
-
-

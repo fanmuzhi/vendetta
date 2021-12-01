@@ -14,22 +14,20 @@ import DiagService.DiagService
 import DiagService.constants
 import DiagService.ttypes
 
+
 def main(client):
     print("test started")
-    devManager = client.getDeviceManager();
-    tcpServerList =  devManager.getTcpServerList();
+    devManager = client.getDeviceManager()
+    tcpServerList = devManager.getTcpServerList()
     print("Tcp Server List = ", tcpServerList)
 
     print("All Done")
 
+
 if __name__ == '__main__':
-    try :
-        client=QutsClient.QutsClient("TcpServerList")
-        
+    try:
+        client = QutsClient.QutsClient("TcpServerList")
+
     except Exception as e:
-        print ("Exception starting client")
-    main( client)      
-    
-
-
-
+        print("Exception starting client")
+    main(client)

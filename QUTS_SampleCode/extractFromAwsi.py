@@ -38,7 +38,7 @@ time.sleep(2)
 deviceList = deviceManager.getDeviceList()
 print("\n\nList of Devices: ")
 for item in deviceList:
-    if (-1 != item.description.find("0035")):  # 0035 = lahaina
+    if -1 != item.description.find("0035"):  # 0035 = lahaina
         deviceId = item.deviceHandle
     print(item)
 print("deviceId = ", deviceId)
@@ -46,7 +46,7 @@ print("deviceId = ", deviceId)
 listOfProtocols = deviceManager.getProtocolList(deviceId)
 print("\n\nList of Protocols: ")
 for item in listOfProtocols:
-    if (-1 != item.description.find("Diagnostics")):
+    if -1 != item.description.find("Diagnostics"):
         diagProtocol = item.protocolHandle
     print(item)
     print("state = ", item.protocolState)
@@ -54,7 +54,8 @@ print("diagProtocol = ", diagProtocol)
 
 
 diagService = DiagService.DiagService.Client(
-    client.createService(DiagService.constants.DIAG_SERVICE_NAME, deviceId))
+    client.createService(DiagService.constants.DIAG_SERVICE_NAME, deviceId)
+)
 
 diagService.initializeServiceByProtocol(diagProtocol)
 
@@ -68,24 +69,42 @@ diagPacketMap.subIdTypeIdMaskMap = {}
 
 subId = -1
 diagPacketMap.subIdTypeIdMaskMap[subId] = {}
-diagPacketMap.subIdTypeIdMaskMap[subId][Common.ttypes.DiagPacketType.LOG_PACKET] = Common.ttypes.DiagPacketIdList()
-diagPacketMap.subIdTypeIdMaskMap[subId][Common.ttypes.DiagPacketType.LOG_PACKET].idOrName = ["0x1375", "0x158C"]
+diagPacketMap.subIdTypeIdMaskMap[subId][
+    Common.ttypes.DiagPacketType.LOG_PACKET
+] = Common.ttypes.DiagPacketIdList()
+diagPacketMap.subIdTypeIdMaskMap[subId][
+    Common.ttypes.DiagPacketType.LOG_PACKET
+].idOrName = ["0x1375", "0x158C"]
 
 
-diagPacketMap.subIdTypeIdMaskMap[subId][Common.ttypes.DiagPacketType.EVENT] = Common.ttypes.DiagPacketIdList()
-diagPacketMap.subIdTypeIdMaskMap[subId][Common.ttypes.DiagPacketType.EVENT].idOrName =  ["1952","289","321"]
+diagPacketMap.subIdTypeIdMaskMap[subId][
+    Common.ttypes.DiagPacketType.EVENT
+] = Common.ttypes.DiagPacketIdList()
+diagPacketMap.subIdTypeIdMaskMap[subId][Common.ttypes.DiagPacketType.EVENT].idOrName = [
+    "1952",
+    "289",
+    "321",
+]
 
 
-diagPacketMap.subIdTypeIdMaskMap[subId][Common.ttypes.DiagPacketType.DEBUG_MSG] = Common.ttypes.DiagPacketIdList()
-diagPacketMap.subIdTypeIdMaskMap[subId][Common.ttypes.DiagPacketType.DEBUG_MSG].idOrName= ["7/2","7/1"]
+diagPacketMap.subIdTypeIdMaskMap[subId][
+    Common.ttypes.DiagPacketType.DEBUG_MSG
+] = Common.ttypes.DiagPacketIdList()
+diagPacketMap.subIdTypeIdMaskMap[subId][
+    Common.ttypes.DiagPacketType.DEBUG_MSG
+].idOrName = ["7/2", "7/1"]
 
-diagPacketMap.subIdTypeIdMaskMap[subId][Common.ttypes.DiagPacketType.QTRACE] = Common.ttypes.DiagPacketIdList()
-diagPacketMap.subIdTypeIdMaskMap[subId][Common.ttypes.DiagPacketType.QTRACE].idOrName= ["64/1","105/3"]
+diagPacketMap.subIdTypeIdMaskMap[subId][
+    Common.ttypes.DiagPacketType.QTRACE
+] = Common.ttypes.DiagPacketIdList()
+diagPacketMap.subIdTypeIdMaskMap[subId][
+    Common.ttypes.DiagPacketType.QTRACE
+].idOrName = ["64/1", "105/3"]
 
 
-utilityService  = client.getUtilityService()
+utilityService = client.getUtilityService()
 
-file = open(r'C:\Temp\test.awsi',"rb")
+file = open(r'C:\Temp\test.awsi', "rb")
 awsiContents = file.read()
 
 time.sleep(2)
@@ -102,4 +121,3 @@ diagService.destroyService()
 
 
 print("All Done")
-

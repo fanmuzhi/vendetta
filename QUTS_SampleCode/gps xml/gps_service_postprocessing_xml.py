@@ -12,7 +12,6 @@ import GpsService.GpsService
 import LogSession.LogSession
 
 
-
 def makeXml(dataPackets):
     root = etree.Element('GPS')
     for packet in dataPackets:
@@ -24,9 +23,9 @@ def makeXml(dataPackets):
         line = content.split('\n')
 
         for word in line:
-            if(line):
-                items = word.split(':',1)
-                if (len(items)==2):
+            if line:
+                items = word.split(':', 1)
+                if len(items) == 2:
 
                     items[0] = items[0].replace(" ", "_")
                     items[0] = items[0].replace("#", "")
@@ -34,10 +33,10 @@ def makeXml(dataPackets):
                     items[0] = items[0].replace(")", "")
                     items[0] = items[0].replace("/", "_")
 
-                    if(not items[0]):
+                    if not items[0]:
                         items[0] = "None"
                     child2 = etree.Element(items[0])
-                    items[1] = items[1].replace("\r","")
+                    items[1] = items[1].replace("\r", "")
                     child2.text = items[1]
                     child1.append(child2)
     s = etree.tostring(root, pretty_print=True)
@@ -50,13 +49,12 @@ def makeXml(dataPackets):
     return result
 
 
-
 def onMessage(level, location, title, description):
     print("Message Received {} {} ".format(title, description))
 
+
 def callbackOnDataView(viewname):
     print("data received ", viewname)
-
 
 
 s = 0
@@ -78,7 +76,10 @@ deviceManager = client.getDeviceManager()
 
 time.sleep(2)
 
-path=[os.getcwd()+r'\915c56b1-cc17-4300-adc2-ef84a427ebd1_50491_NMEA_Prolific_USB-to-Serial_Comm_Port_(COM21)_0.hdf']
+path = [
+    os.getcwd()
+    + r'\915c56b1-cc17-4300-adc2-ef84a427ebd1_50491_NMEA_Prolific_USB-to-Serial_Comm_Port_(COM21)_0.hdf'
+]
 
 
 logSession = client.openLogSession(path)
@@ -95,12 +96,16 @@ nmeaProtocolHandle = None
 nmeaDetectionString = "COM21"
 print("\n\nList of Protocols: ")
 for item in listOfProtocols:
-    if (-1 != item.description.find(nmeaDetectionString)): # Use the gps device specific name filter here
+    if -1 != item.description.find(
+        nmeaDetectionString
+    ):  # Use the gps device specific name filter here
         nmeaProtocolHandle = item.protocolHandle
     print(item)
 
-if(not nmeaProtocolHandle):
-    raise Exception("No NMEA protocol found matching description " + nmeaDetectionString)
+if not nmeaProtocolHandle:
+    raise Exception(
+        "No NMEA protocol found matching description " + nmeaDetectionString
+    )
 print("nmeaProtocolHandle = ", nmeaProtocolHandle)
 
 
@@ -109,21 +114,22 @@ nmeaFilter.nameMask = [r'$GPGGA', r'$GPRMC', r'$GPGSA', r'$GPGSV']
 
 
 dataPacketFilter = LogSession.ttypes.DataPacketFilter()
-dataPacketFilter.protocolHandleList = [nmeaProtocolHandle];
+dataPacketFilter.protocolHandleList = [nmeaProtocolHandle]
 dataPacketFilter.nmeaFilter = nmeaFilter
 
 
-
-
-
-
 returnObjNmea = Common.ttypes.NmeaReturnConfig()
-returnObjNmea.flags = Common.ttypes.DiagReturnFlags.PARSED_TEXT | Common.ttypes.DiagReturnFlags.PACKET_NAME | Common.ttypes.DiagReturnFlags.PACKET_ID | Common.ttypes.DiagReturnFlags.PACKET_TYPE
+returnObjNmea.flags = (
+    Common.ttypes.DiagReturnFlags.PARSED_TEXT
+    | Common.ttypes.DiagReturnFlags.PACKET_NAME
+    | Common.ttypes.DiagReturnFlags.PACKET_ID
+    | Common.ttypes.DiagReturnFlags.PACKET_TYPE
+)
 
 packetReturnConfig = LogSession.ttypes.PacketReturnConfig()
 packetReturnConfig.nmeaConfig = returnObjNmea
 
-logSession.createDataView("data", dataPacketFilter, packetReturnConfig);
+logSession.createDataView("data", dataPacketFilter, packetReturnConfig)
 
 packetRange = LogSession.ttypes.PacketRange()
 packetRange.indexType = LogSession.ttypes.IndexType.DATA_VIEW_INDEX
@@ -146,14 +152,4 @@ xmlResult = makeXml(dataPackets)
 print(xmlResult)
 
 
-
-
 print("Done")
-
-
-
-
-
-
-
-

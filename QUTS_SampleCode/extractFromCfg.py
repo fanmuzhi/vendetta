@@ -38,7 +38,7 @@ time.sleep(2)
 deviceList = deviceManager.getDeviceList()
 print("\n\nList of Devices: ")
 for item in deviceList:
-    if (-1 != item.description.find("0035")):  # 0035 = lahaina
+    if -1 != item.description.find("0035"):  # 0035 = lahaina
         deviceId = item.deviceHandle
     print(item)
 
@@ -48,7 +48,7 @@ print("deviceId = ", deviceId)
 listOfProtocols = deviceManager.getProtocolList(deviceId)
 print("\n\nList of Protocols: ")
 for item in listOfProtocols:
-    if (-1 != item.description.find("Diagnostics")):
+    if -1 != item.description.find("Diagnostics"):
         diagProtocol = item.protocolHandle
     print(item)
     print("state = ", item.protocolState)
@@ -58,7 +58,8 @@ print("diagProtocol = ", diagProtocol)
 
 
 diagService = DiagService.DiagService.Client(
-    client.createService(DiagService.constants.DIAG_SERVICE_NAME, deviceId))
+    client.createService(DiagService.constants.DIAG_SERVICE_NAME, deviceId)
+)
 
 diagService.initializeServiceByProtocol(diagProtocol)
 
@@ -72,42 +73,62 @@ diagPacketMap.subIdTypeIdMaskMap = {}
 
 subId = -1
 diagPacketMap.subIdTypeIdMaskMap[subId] = {}
-diagPacketMap.subIdTypeIdMaskMap[subId][Common.ttypes.DiagPacketType.LOG_PACKET] = Common.ttypes.DiagPacketIdList()
-diagPacketMap.subIdTypeIdMaskMap[subId][Common.ttypes.DiagPacketType.LOG_PACKET].idOrName = ["0x1375", "0x158C"]
+diagPacketMap.subIdTypeIdMaskMap[subId][
+    Common.ttypes.DiagPacketType.LOG_PACKET
+] = Common.ttypes.DiagPacketIdList()
+diagPacketMap.subIdTypeIdMaskMap[subId][
+    Common.ttypes.DiagPacketType.LOG_PACKET
+].idOrName = ["0x1375", "0x158C"]
 
 
-diagPacketMap.subIdTypeIdMaskMap[subId][Common.ttypes.DiagPacketType.EVENT] = Common.ttypes.DiagPacketIdList()
-diagPacketMap.subIdTypeIdMaskMap[subId][Common.ttypes.DiagPacketType.EVENT].idOrName =  ["1952","289","321"]
+diagPacketMap.subIdTypeIdMaskMap[subId][
+    Common.ttypes.DiagPacketType.EVENT
+] = Common.ttypes.DiagPacketIdList()
+diagPacketMap.subIdTypeIdMaskMap[subId][Common.ttypes.DiagPacketType.EVENT].idOrName = [
+    "1952",
+    "289",
+    "321",
+]
 
 
-diagPacketMap.subIdTypeIdMaskMap[subId][Common.ttypes.DiagPacketType.DEBUG_MSG] = Common.ttypes.DiagPacketIdList()
-diagPacketMap.subIdTypeIdMaskMap[subId][Common.ttypes.DiagPacketType.DEBUG_MSG].idOrName= ["7/2","7/1"]
+diagPacketMap.subIdTypeIdMaskMap[subId][
+    Common.ttypes.DiagPacketType.DEBUG_MSG
+] = Common.ttypes.DiagPacketIdList()
+diagPacketMap.subIdTypeIdMaskMap[subId][
+    Common.ttypes.DiagPacketType.DEBUG_MSG
+].idOrName = ["7/2", "7/1"]
 
-diagPacketMap.subIdTypeIdMaskMap[subId][Common.ttypes.DiagPacketType.QTRACE] = Common.ttypes.DiagPacketIdList()
-diagPacketMap.subIdTypeIdMaskMap[subId][Common.ttypes.DiagPacketType.QTRACE].idOrName= ["64/1","105/3"]
+diagPacketMap.subIdTypeIdMaskMap[subId][
+    Common.ttypes.DiagPacketType.QTRACE
+] = Common.ttypes.DiagPacketIdList()
+diagPacketMap.subIdTypeIdMaskMap[subId][
+    Common.ttypes.DiagPacketType.QTRACE
+].idOrName = ["64/1", "105/3"]
 
 
-utilityService  = client.getUtilityService()
+utilityService = client.getUtilityService()
 
 time.sleep(2)
 format = Common.ttypes.LogMaskFormat().CFG_FORMAT
 
-cfgContents = utilityService.generateCfg(diagPacketMap, format )
+cfgContents = utilityService.generateCfg(diagPacketMap, format)
 
-print("cfgContents = ", cfgContents);
+print("cfgContents = ", cfgContents)
 
-byteArray = bytearray(cfgContents);
+byteArray = bytearray(cfgContents)
 newFile = open(r'C:\Users\FNH1SGH\Desktop\mydmc', "rb")
 # newFile.write(byteArray)
 
-file = open(r'C:\Users\FNH1SGH\Desktop\mydmc',"rb")
+file = open(r'C:\Users\FNH1SGH\Desktop\mydmc', "rb")
 contents = file.read()
-diagService.setLoggingMask(contents, 2) # 2 for dmc_format. # 1 for cfg2_format, # 0 for cfg_format
+diagService.setLoggingMask(
+    contents, 2
+)  # 2 for dmc_format. # 1 for cfg2_format, # 0 for cfg_format
 
 time.sleep(2)
 format = Common.ttypes.LogMaskFormat().CFG_FORMAT
 
-extracted = utilityService.extractFromCfg(cfgContents, format )
+extracted = utilityService.extractFromCfg(cfgContents, format)
 
 
 for type in extracted.subIdTypeIdMaskMap[-1]:
@@ -124,5 +145,3 @@ diagService.destroyService()
 
 
 print("All Done")
-
-

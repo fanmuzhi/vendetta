@@ -20,9 +20,8 @@ import RawService.constants
 import RawService.ttypes
 
 
-
-
 doRun = 1
+
 
 def main():
 
@@ -38,14 +37,14 @@ def main():
 
     deviceManager = client.getDeviceManager()
 
-
-
     time.sleep(2)
 
     serviceList = deviceManager.getServicesList()
     print("\n\nList of Services: ", serviceList)
 
-    deviceList = deviceManager.getDevicesForService(QmiService.constants.QMI_SERVICE_NAME)
+    deviceList = deviceManager.getDevicesForService(
+        QmiService.constants.QMI_SERVICE_NAME
+    )
     print("Devices List: ", deviceList)
 
     deviceId = 281474976710656
@@ -55,13 +54,12 @@ def main():
     for element in protocolList:
         print(element)
 
-
-
     rawService = RawService.RawService.Client(
-        client.createService(RawService.constants.RAW_SERVICE_NAME, deviceId))
+        client.createService(RawService.constants.RAW_SERVICE_NAME, deviceId)
+    )
 
     diagHandle = 281492156579840
-    rawService.initializeService(diagHandle,3,3)
+    rawService.initializeService(diagHandle, 3, 3)
 
     input = bytearray(b'\x29\x04\x00')
     response = rawService.sendRequest(input, 3000)
@@ -71,8 +69,6 @@ def main():
 
     time.sleep(2)
 
+
 if __name__ == '__main__':
     main()
-
-
-

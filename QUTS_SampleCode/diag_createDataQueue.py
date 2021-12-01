@@ -1,6 +1,7 @@
 import sys
 import time
 from pprint import pp
+
 if sys.platform.startswith("linux"):
     sys.path.append('/opt/qcom/QUTS/Support/python')
 elif sys.platform.startswith("win"):
@@ -22,6 +23,7 @@ import LogSession.ttypes
 
 def onDataQueueUpdated(queueName, queueSize):
     print("queueName = ", queueName, ", current queueSize = ", queueSize)
+
 
 try:
     client = QutsClient.QutsClient("QUTS Sample")
@@ -194,14 +196,14 @@ while diagPackets:
 
     # print([f"{k}: {v}" for k, v in diagPackets[i].__dict__])
     # pp(
-        # diagPackets[i].packetId,
-        # diagPackets[i].packetType,
-        # diagPackets[i].timeStampData,
-        # diagPackets[i].packetName,
-        # diagPackets[i].summaryText,
-        # diagPackets[i].binaryPayload,
-        # diagPackets[i].ulogSource,
-        # diagPackets[i].__dict__
+    # diagPackets[i].packetId,
+    # diagPackets[i].packetType,
+    # diagPackets[i].timeStampData,
+    # diagPackets[i].packetName,
+    # diagPackets[i].summaryText,
+    # diagPackets[i].binaryPayload,
+    # diagPackets[i].ulogSource,
+    # diagPackets[i].__dict__
     # )
 #
 # print("Total pkts", len(diagPackets))

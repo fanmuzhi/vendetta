@@ -36,8 +36,6 @@ def main():
 
     deviceManager = client.getDeviceManager()
 
-
-
     time.sleep(2)
 
     serviceList = deviceManager.getServicesList()
@@ -55,17 +53,15 @@ def main():
     for element in protocolList:
         print(element)
 
-
-
     rawService = RawService.RawService.Client(
-        client.createService(RawService.constants.RAW_SERVICE_NAME, deviceId))
+        client.createService(RawService.constants.RAW_SERVICE_NAME, deviceId)
+    )
 
     diagHandle = 281496451547136
     adbProtocolHandle = 281509336449024
-    rawService.initializeService(adbProtocolHandle,3,3)
+    rawService.initializeService(adbProtocolHandle, 3, 3)
 
-
-    input = bytes('adb devices','utf-8')
+    input = bytes('adb devices', 'utf-8')
     print("Get adb devices ")
 
     response = rawService.sendRequest(input, 10000)
@@ -75,8 +71,6 @@ def main():
 
     time.sleep(2)
 
+
 if __name__ == '__main__':
     main()
-
-
-

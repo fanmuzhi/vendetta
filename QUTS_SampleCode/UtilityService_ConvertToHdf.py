@@ -20,16 +20,18 @@ import LogSession.LogSession
 import LogSession.constants
 import LogSession.ttypes
 
+
 def execTest(quts_client, logPath):
     startTime = time.time()
     if sys.platform == "linux" or sys.platform == "linux2" or sys.platform == "darwin":
         saveFolder = os.getcwd() + "/testlog"
     elif sys.platform == "win32":
         saveFolder = r"C:\temp\testlog\\"
-    utilityService  = quts_client.getUtilityService()
+    utilityService = quts_client.getUtilityService()
     logFiles = utilityService.convertToHdf({logPath}, saveFolder)
     print("Saved log paths: ", logFiles)
     print("Elapsed time ", time.time() - startTime)
+
 
 if __name__ == "__main__":
     quts_client = QutsClient.QutsClient("UtilityService_ConvertToHdfSample")

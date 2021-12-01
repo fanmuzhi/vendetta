@@ -243,7 +243,7 @@ function filterTable(elem) { // eslint-disable-line no-unused-vars
 }
 </script>
     <h1>report.html</h1>
-    <p>Report generated on 24-Nov-2021 at 17:47:22 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a> v3.1.1</p>
+    <p>Report generated on 30-Nov-2021 at 13:17:45 by <a href="https://pypi.python.org/pypi/pytest-html">pytest-html</a> v3.1.1</p>
     <h2>Environment</h2>
     <table id="environment">
       <tr>
@@ -262,8 +262,8 @@ function filterTable(elem) { // eslint-disable-line no-unused-vars
         <td>Python</td>
         <td>3.8.11</td></tr></table>
     <h2>Summary</h2>
-    <p>0 tests ran in 1.40 seconds. </p>
-    <p class="filter" hidden="true">(Un)check the boxes to filter the results.</p><input checked="true" class="filter" data-test-result="passed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="passed">0 passed</span>, <input checked="true" class="filter" data-test-result="skipped" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="skipped">0 skipped</span>, <input checked="true" class="filter" data-test-result="failed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="failed">0 failed</span>, <input checked="true" class="filter" data-test-result="error" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="error">1 errors</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xfailed">0 expected failures</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xpassed">0 unexpected passes</span>
+    <p>1 tests ran in 14.51 seconds. </p>
+    <p class="filter" hidden="true">(Un)check the boxes to filter the results.</p><input checked="true" class="filter" data-test-result="passed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="passed">0 passed</span>, <input checked="true" class="filter" data-test-result="skipped" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="skipped">0 skipped</span>, <input checked="true" class="filter" data-test-result="failed" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="failed">1 failed</span>, <input checked="true" class="filter" data-test-result="error" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="error">0 errors</span>, <input checked="true" class="filter" data-test-result="xfailed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xfailed">0 expected failures</span>, <input checked="true" class="filter" data-test-result="xpassed" disabled="true" hidden="true" name="filter_checkbox" onChange="filterTable(this)" type="checkbox"/><span class="xpassed">0 unexpected passes</span>
     <h2>Results</h2>
     <table id="results-table">
       <thead id="results-table-head">
@@ -274,12 +274,13 @@ function filterTable(elem) { // eslint-disable-line no-unused-vars
           <th class="sortable links" col="links">Links</th></tr>
         <tr hidden="true" id="not-found-message">
           <th colspan="4">No results found. Try to check the filters</th></tr></thead>
-      <tbody class="error results-table-row">
+      <tbody class="failed results-table-row">
         <tr>
-          <td class="col-result">Error</td>
-          <td class="col-name">::collect</td>
-          <td class="col-duration"></td>
+          <td class="col-result">Failed</td>
+          <td class="col-name">testcases/QualcommSeeDriverTests/test_imu_driver.py::TestFactoryTest::test_factory_test[accel-Calibration-hw0]</td>
+          <td class="col-duration">13.62</td>
           <td class="col-links"></td></tr>
         <tr>
           <td class="extra" colspan="4">
-            <div class="empty log">No log output captured.</div></td></tr></tbody></table></body></html>
+            <div class="log"><span class="error">E   pytest_assume.plugin.FailedAssumption: </span><br/>    2 Failed Assumptions:<br/>    <br/>    testcases\QualcommSeeDriverTests\test_imu_driver.py:60: AssumptionFailure<br/>    &gt;&gt;	assert match_summary_text(<br/>    AssertionError: key word f&#x27;Test level 2: PASS&#x27; not found <br/>    assert False<br/>     +  where False = match_summary_text(&lt;DiagService.DiagService.Client object at 0x000001D6ABD19610&gt;, &#x27;Test level 2: PASS&#x27;, &#x27;data&#x27;)<br/>    <br/>    testcases\QualcommSeeDriverTests\test_imu_driver.py:66: AssumptionFailure<br/>    &gt;&gt;	assert [pre + 1 for pre in prev_biasvals] == list(<br/>    AssertionError: bias values [x, y, z]: (177, 177, 177) is not updated after calibration<br/>    assert [178, 178, 178] == [177, 177, 177]<br/>      At index 0 diff: 178 != 177<br/>      Full diff:<br/>      - [177, 177, 177]<br/>      ?    ^    ^    ^<br/>      + [178, 178, 178]<br/>      ?    ^    ^    ^<br/> -------------------------------Captured log call-------------------------------- <br/>INFO     root:ssc_drva.py:78 
+execute ssc_drva_test -sensor=accel -duration=5 -factory_test=2 -hw_id=0<br/></div></td></tr></tbody></table></body></html>

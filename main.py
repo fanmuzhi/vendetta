@@ -9,15 +9,18 @@ import time
 import re
 
 import lib.quts
+
 # The path where QUTS files are installed
 
 
 import QutsClient
 import DeviceConfigService.DeviceConfigService
 import DeviceConfigService.constants
+
 # import Common.ttypes
 import DiagService.DiagService
 import DiagService.constants
+
 # import DiagService
 
 if __name__ == '__main__':
@@ -28,7 +31,9 @@ if __name__ == '__main__':
     deviceList = devManager.getDeviceList()
     for dev in deviceList:
         if dev.vid == '05C6' and dev.pid == '901D':
-            print(f"Device Details: Serial Number {dev.serialNumber} Adb Serial Number {dev.adbSerialNumber}")
+            print(
+                f"Device Details: Serial Number {dev.serialNumber} Adb Serial Number {dev.adbSerialNumber}"
+            )
             break
     else:
         print('No valid device found')
@@ -37,7 +42,10 @@ if __name__ == '__main__':
     devices = devManager.getDevicesForService(DiagService.constants.DIAG_SERVICE_NAME)
     print(devices)
     devConfig = DeviceConfigService.DeviceConfigService.Client(
-        quts_client.createService(DeviceConfigService.constants.DEVICE_CONFIG_SERVICE_NAME, devices[0]))
+        quts_client.createService(
+            DeviceConfigService.constants.DEVICE_CONFIG_SERVICE_NAME, devices[0]
+        )
+    )
     dev_service = devConfig.initializeService()
     diag_service = DiagService.DiagService.Client(
         quts_client.createService(DiagService.constants.DIAG_SERVICE_NAME, devices[0])

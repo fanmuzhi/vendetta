@@ -10,11 +10,12 @@ import six
 
 
 from sys import platform
+
 if platform == "linux" or platform == "linux2":
     sys.path.append('/opt/qcom/QUTS/Support/python')
 elif platform == "win32":
     sys.path.append('/')
-	
+
 import QutsClient
 import Common.ttypes
 
@@ -33,7 +34,9 @@ def main(client, argv):
     devManager = client.getDeviceManager()
 
     # get only the devices that support Diag, because the current QXDM plugin commands are meant for Diag only.
-    deviceList = devManager.getDevicesForService(DiagService.constants.DIAG_SERVICE_NAME)
+    deviceList = devManager.getDevicesForService(
+        DiagService.constants.DIAG_SERVICE_NAME
+    )
     protList = devManager.getProtocolList(deviceList[0])
     print("First device in device list: {}".format(deviceList[0]))
 
@@ -41,17 +44,23 @@ def main(client, argv):
     diagProtocolHandle = -1
 
     for i in range(length):
-        if (protList[i].protocolType == 0):  # diag type
+        if protList[i].protocolType == 0:  # diag type
             diagProtocolHandle = protList[i].protocolHandle
-            print("Found diag Handle " + str(diagProtocolHandle) + " description " + protList[i].description)
+            print(
+                "Found diag Handle "
+                + str(diagProtocolHandle)
+                + " description "
+                + protList[i].description
+            )
 
-    if (diagProtocolHandle == -1):
+    if diagProtocolHandle == -1:
         print("No diag protocol handle found..returning")
         return
 
     ## create the QXDM for the device
     qxdmService = QXDMService.QxdmService.Client(
-        client.createService(QXDMService.constants.QXDM_SERVICE_NAME, deviceList[0]))
+        client.createService(QXDMService.constants.QXDM_SERVICE_NAME, deviceList[0])
+    )
 
     # # Start the service for the protocol in the selected device
     # if(0 != qxdmService.initializeServiceByProtocol(diagProtocolHandle)):
@@ -60,7 +69,7 @@ def main(client, argv):
     # else:
     #     print("Initialized Service by protocol successfully")
 
-    if (0 != qxdmService.startQXDM(diagProtocolHandle)):
+    if 0 != qxdmService.startQXDM(diagProtocolHandle):
         print("Error in start QXDM")  # Starts diag service on this prot handle
     else:
         print("Diag Service started on handle " + str(diagProtocolHandle))
@@ -80,12 +89,13 @@ def main(client, argv):
         b'QSHRequest cfg l2lb 0xBB 0x0 0xFA00',
         b'QSHRequest cfg l2lb 0x2 0x0013',
         b'QSHRequest cfg l2lb 0x101 0xFA00',
-    #   b'run C:\\Dropbox\\send_data.scr',
+        #   b'run C:\\Dropbox\\send_data.scr',
         b'mode lpm',
         b'mode online',
-    #   b'echo this is my log', #Not supported
+        #   b'echo this is my log', #Not supported
         b'RequestNVItemRead /nv/item_files/modem/mmode/lte_bandpref',
-        b'RequestNVItemWrite /nv/item_files/modem/mmode/lte_bandpref 1']
+        b'RequestNVItemWrite /nv/item_files/modem/mmode/lte_bandpref 1',
+    ]
 
     commandListLength = len(commandList)
 
@@ -96,7 +106,7 @@ def main(client, argv):
             print("Send Command Successful: {}".format(commandList[i]))
         else:
             print("Send Command Failed: {}".format(commandList[i]))
-        #time.sleep(1)
+        # time.sleep(1)
 
     # done using the service. This will close the QXDM plugin exe that QUTS started.
 

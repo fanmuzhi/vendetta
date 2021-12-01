@@ -28,6 +28,10 @@ def is_admin():
         return False
 
 
+def file_exists(file):
+    return os.path.exists(file)
+
+
 def datetime_str():
     return datetime.now().strftime(datetime_format)
 
@@ -81,9 +85,11 @@ def imu_bias_values(productname, sensor):
     cat = ADB().adb_cat(biasfile)
     json_buffer = json.loads(cat.decode())
     root = list(json_buffer.keys())[0]
-    return int(json_buffer[root]['x']['ver']), \
-           int(json_buffer[root]['y']['ver']),\
-           int(json_buffer[root]['z']['ver']),
+    return (
+        int(json_buffer[root]['x']['ver']),
+        int(json_buffer[root]['y']['ver']),
+        int(json_buffer[root]['z']['ver']),
+    )
 
 
 def collect_csvs(ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, param_sets):
@@ -94,18 +100,14 @@ def collect_csvs(ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, param_sets):
     with logging_diag_hdf(quts_dev_mgr, filename):
         ssc_drva.ssc_drva_run(ssc_drva_cmd)
     qseevt.set_hdffile_text(filename)
-    qseevt.set_sensor_info_file_text(
-        info_file=sensor_info_txt
-    )
+    qseevt.set_sensor_info_file_text(info_file=sensor_info_txt)
     qseevt.run_log_analysis()
     while not qseevt.analyze_complete():
         time.sleep(0.1)
     parsed_folder = os.path.splitext(filename)[0]
     csv_data_logs = []
     for par, dirs, files in os.walk(parsed_folder):
-        csv_data_logs += [
-            os.path.join(par, f) for f in files if valid_csv_name(f)
-        ]
+        csv_data_logs += [os.path.join(par, f) for f in files if valid_csv_name(f)]
 
     return csv_data_logs
 

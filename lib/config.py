@@ -12,6 +12,13 @@ import logging
 path = os.path.dirname(__file__)
 LOG_LEVEL = logging.INFO
 datetime_format = '%Y%m%d%H%M%S'
+seevt_progdata_dir = r'C:\ProgramData\Qualcomm\Qualcomm_SEEVT'
+seevt_protos_dir = os.path.join(seevt_progdata_dir, 'Protos')
+proto_config_file = os.path.join(seevt_progdata_dir, 'Protos.config')
+platform_code = {
+    'hdk8250': 'kona',
+    'hdk8350': 'lahaina'
+}
 
 if LOG_LEVEL > logging.DEBUG:
     ssc_drva_stdout = False
@@ -83,20 +90,25 @@ odr_to_interval = {
     Odr.odr_200hz: 5,
 }
 
+res_values = {
+    Sensor.acc.value: {0: '2g', 1: '4g', 2: 'g', 3: '16g',},
+    Sensor.gyr.value: {1: '250dps', 2: '500dps', 3: '1000dps', 4: '2000dps',},
+}
+
 
 class AccRes(Enum):
-    res_2g = 0
-    res_4g = 1
-    res_8g = 2
-    res_16g = 3
+    res2g = 0
+    res4g = 1
+    res8g = 2
+    res16g = 3
 
 
 class GyrRes(Enum):
     # res_125dps = 0
-    res_250dps = 1
-    res_500dps = 2
-    res_1000dps = 3
-    res_2000dps = 4
+    res250dps = 1
+    res500dps = 2
+    res1000dps = 3
+    res2000dps = 4
 
 
 class MagRes(Enum):
@@ -122,7 +134,7 @@ class FacTest(Enum):
 
 if __name__ == '__main__':
     # sensors = [Sensor.acc.value, Sensor.gyr.value]
-    print(FacTest(0).name)
+    print(res_idx_dict)
     # for sensor in sensors:
     #     res_idx_vals_list.append()
     #

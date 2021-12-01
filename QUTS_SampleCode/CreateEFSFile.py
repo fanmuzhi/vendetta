@@ -1,4 +1,5 @@
 import sys
+
 if sys.platform.startswith("linux"):
     sys.path.append('/opt/qcom/QUTS/Support/python')
 elif sys.platform.startswith("win"):
@@ -18,28 +19,36 @@ try:
     time.sleep(5)
     devmgr = client.getDeviceManager()
     deviceList = devmgr.getDeviceList()
-    dev = 0;
+    dev = 0
     for device in deviceList:
-        if(device.description.find('Qualcomm') != -1):
-            print ("=====Qualcomm Device=====")
-            print (device.description)
-            print ("Device Serial Number", device.serialNumber)
-            print ("Adb Serial Number", device.adbSerialNumber)
-            dev=device.deviceHandle
-            break;
+        if device.description.find('Qualcomm') != -1:
+            print("=====Qualcomm Device=====")
+            print(device.description)
+            print("Device Serial Number", device.serialNumber)
+            print("Adb Serial Number", device.adbSerialNumber)
+            dev = device.deviceHandle
+            break
 
-    devCfg=DeviceConfigService.DeviceConfigService.Client(client.createService(DeviceConfigService.constants.DEVICE_CONFIG_SERVICE_NAME, dev))
-    if (devCfg == None or 0 != devCfg.initializeService()):
+    devCfg = DeviceConfigService.DeviceConfigService.Client(
+        client.createService(
+            DeviceConfigService.constants.DEVICE_CONFIG_SERVICE_NAME, dev
+        )
+    )
+    if devCfg == None or 0 != devCfg.initializeService():
         print(self.clientName, serviceName, "init failed")
 
     try:
-        if (devCfg.checkSpc("000000")):
-            err = devCfg.efsPutFile(r"/nv/text.txt", bytes(b'x00x01'), DeviceConfigService.ttypes.FileSystem.FS_PRIMARY)
-            if(err != 0):
+        if devCfg.checkSpc("000000"):
+            err = devCfg.efsPutFile(
+                r"/nv/text.txt",
+                bytes(b'x00x01'),
+                DeviceConfigService.ttypes.FileSystem.FS_PRIMARY,
+            )
+            if err != 0:
                 print(err)
     except Exception as e:
         print("Exception", devCfg.getLastError())
-            
+
 
 except Exception as e:
     print(traceback.format_exc())

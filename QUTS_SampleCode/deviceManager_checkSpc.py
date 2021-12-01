@@ -45,7 +45,7 @@ for item in deviceList:
     print(item)
 
 deviceId = 562949953421312
-#diagProtocol = 281492156579840
+# diagProtocol = 281492156579840
 diagProtocol = 0
 
 listOfProtocols = deviceManager.getProtocolList(deviceId)
@@ -57,7 +57,7 @@ serviceList = deviceManager.getServicesList()
 print("\n\nList of Services: ", serviceList)
 
 
-status = deviceManager.checkSpc(deviceId, diagProtocol,"000000")
+status = deviceManager.checkSpc(deviceId, diagProtocol, "000000")
 print("spc (000000) status = ", status)
 
 status = deviceManager.checkSpc(deviceId, diagProtocol, "000001")
@@ -68,8 +68,3 @@ print("chipname = ", chipname)
 
 
 print("All Done")
-
-
-
-
-

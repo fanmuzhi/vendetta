@@ -45,7 +45,7 @@ for item in deviceList:
     print(item)
 
 deviceId = 281474976710656
-#diagProtocol = 281492156579840
+# diagProtocol = 281492156579840
 diagProtocol = 0
 
 listOfProtocols = deviceManager.getProtocolList(deviceId)
@@ -73,13 +73,4 @@ meid = deviceManager.getMeid(deviceId)
 print("meid = ", meid)
 
 
-
-
-
-
 print("All Done")
-
-
-
-
-

@@ -8,7 +8,7 @@ elif sys.platform.startswith("win"):
     sys.path.append('/')
 elif sys.platform.startswith("darwin"):
     sys.path.append('/Applications/Qualcomm/QUTS/QUTS.app/Contents/Support/python')
-    
+
 import QutsClient
 import Common.ttypes
 
@@ -19,6 +19,7 @@ import DeviceConfigService.ttypes
 import threading
 
 doRun = 1
+
 
 def main():
 
@@ -45,31 +46,31 @@ def main():
     qmiProtocol = 281479271677952
 
     deviceConfigService = DeviceConfigService.DeviceConfigService.Client(
-    client.createService(DeviceConfigService.constants.DEVICE_CONFIG_SERVICE_NAME, deviceId))
+        client.createService(
+            DeviceConfigService.constants.DEVICE_CONFIG_SERVICE_NAME, deviceId
+        )
+    )
 
     # deviceConfigService.initializeServiceByProtocol(diagProtocol, qmiProtocol)
     deviceConfigService.initializeService()
 
     ####################################
     global doRun
-    #t1 = threading.Thread(target=task1,args=(deviceManager,))
-    t2 = threading.Thread(target=task2,args=(deviceConfigService,))
+    # t1 = threading.Thread(target=task1,args=(deviceManager,))
+    t2 = threading.Thread(target=task2, args=(deviceConfigService,))
 
-
-    #t1.start()
+    # t1.start()
     t2.start()
 
-
     time.sleep(3000)
-    doRun=0
-    print ("doRun set to 0")
+    doRun = 0
+    print("doRun set to 0")
 
-    #t1.join()
+    # t1.join()
     t2.join()
 
     time.sleep(2)
     print("All Done")
-
 
 
 def task1(deviceManager):
@@ -77,12 +78,11 @@ def task1(deviceManager):
     print("\n", tid, ": thread started ")
     global doRun
     j = 0
-    while(doRun==1):
+    while doRun == 1:
         print("\n", tid, ": thread started in while loop")
         servicesList = deviceManager.getServicesList()
-        print("\n" ,j,":", tid, ": List of Services: ", servicesList)
+        print("\n", j, ":", tid, ": List of Services: ", servicesList)
         j += 1
-
 
 
 def task2(deviceConfigService):
@@ -90,21 +90,18 @@ def task2(deviceConfigService):
     print("\n", tid, ": thread started ")
     global doRun
     i = 0
-    while (doRun == 1):
+    while doRun == 1:
 
         print("\n", tid, ": thread started in while loop")
         response = deviceConfigService.backupToXqcn("000000", False, 100000, "")
         print("\n", i, ":", tid, ":response = ", response)
 
-        errCode = deviceConfigService.restoreFromXqcn(response, "000000", True, False, 10000, "")
+        errCode = deviceConfigService.restoreFromXqcn(
+            response, "000000", True, False, 10000, ""
+        )
         print("\n", i, ":", tid, ":errCode = ", errCode)
         i += 1
 
 
-
-
 if __name__ == '__main__':
     main()
-
-
-

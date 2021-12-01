@@ -17,6 +17,7 @@ import QmiService.constants
 import QmiService.ttypes
 import DeviceManager.ttypes
 
+
 def onMessage(level, location, title, description):
     print("Message Received {} {} ".format(title, description))
 
@@ -45,7 +46,7 @@ for item in deviceList:
     print(item)
 
 deviceId = 281474976710656
-#diagProtocol = 281492156579840
+# diagProtocol = 281492156579840
 diagProtocol = 0
 
 listOfProtocols = deviceManager.getProtocolList(deviceId)
@@ -57,27 +58,30 @@ serviceList = deviceManager.getServicesList()
 print("\n\nList of Services: ", serviceList)
 
 
-#diagProtocolHandle = 281496451547136
+# diagProtocolHandle = 281496451547136
 diagProtocolHandle = 0
 
-#diagProtocolHandle = 281496451547136 # mdm
-#diagProtocolHandle = 281483566645248 # apq
+# diagProtocolHandle = 281496451547136 # mdm
+# diagProtocolHandle = 281483566645248 # apq
 
 diagProtocolHandle = 281492156579840
 
 
-ret = deviceManager.setOperatingMode(deviceId, diagProtocolHandle, DeviceManager.ttypes.OperatingMode.ONLINE)
+ret = deviceManager.setOperatingMode(
+    deviceId, diagProtocolHandle, DeviceManager.ttypes.OperatingMode.ONLINE
+)
 print("ret = ", ret)
 
-ret = deviceManager.setOperatingMode(deviceId, diagProtocolHandle, DeviceManager.ttypes.OperatingMode.ONLINE)
+ret = deviceManager.setOperatingMode(
+    deviceId, diagProtocolHandle, DeviceManager.ttypes.OperatingMode.ONLINE
+)
 print("ret = ", ret)
 
 
-ret = deviceManager.setOperatingMode(deviceId, diagProtocolHandle, DeviceManager.ttypes.OperatingMode.ONLINE)
+ret = deviceManager.setOperatingMode(
+    deviceId, diagProtocolHandle, DeviceManager.ttypes.OperatingMode.ONLINE
+)
 print("ret = ", ret)
-
-
-
 
 
 # #
@@ -131,10 +135,4 @@ print("ret = ", ret)
 #
 
 
-
 print("All Done")
-
-
-
-
-

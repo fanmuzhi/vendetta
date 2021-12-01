@@ -77,6 +77,7 @@ debug_msg_filter_item = [
     "125/4",
 ]
 
+
 def on_message(level, location, title, description):
     print("Message Received " + title + " " + description)
 
@@ -261,10 +262,7 @@ def logging_diag_hdf(dev_mgr: DeviceManager.DeviceManager.Client, hdf_file):
 
 @contextlib.contextmanager
 def logging_data_queue(
-    diag_service,
-    queue_name,
-    count=300000,
-    timeout=20,
+    diag_service, queue_name, count=300000, timeout=20,
 ):
     items = {}
     items[Common.ttypes.DiagPacketType.LOG_PACKET] = log_packet_filter_item

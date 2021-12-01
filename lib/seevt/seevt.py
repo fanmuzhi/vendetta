@@ -5,6 +5,7 @@
 # =================================================================
 import logging
 from pywinauto import application
+
 # from pywinauto.findbestmatch import find_best_match
 # from pywinauto.findwindows import find_window
 # import pywinauto.findwindows as findwindows
@@ -15,9 +16,11 @@ from pywinauto.handleprops import children, dumpwindow
 # is_toplevel_window, isenabled, isunicode, isvisible, iswindow, parent, processid, \
 # rectangle, style, text, userdata
 import os
+
 # import win32gui
 # import re
 import time
+
 # from log import logger
 import ctypes, sys
 
@@ -27,7 +30,9 @@ seevt_exe = r'C:\Program Files\Qualcomm\Qualcomm_SEEVT\Qualcomm_SEEVT.exe'
 qseevt_luanch_window_name = "Qualcomm Sensor Execution Environment Validation Tool"
 btn_run_analysis_on_existing_log_file = "Run Analysis on Existing Log File"
 
-log_analysis_window_name = "Qualcomm Sensor Execution Environment Validation Tool:  Log Analysis"
+log_analysis_window_name = (
+    "Qualcomm Sensor Execution Environment Validation Tool:  Log Analysis"
+)
 btn_run_log_analysis = 'Run Log Analysis'
 choose_log_file_window_name = "Choose the log file to parse!"
 status_strip = 'StatusStrip'
@@ -117,7 +122,6 @@ def is_admin():
 
 
 class Qseevt(object):
-
     def __init__(self, app_name):
         """
         Init an application
@@ -133,7 +137,9 @@ class Qseevt(object):
 
     def enter_log_analysis_window(self):
         self.app[qseevt_luanch_window_name].wait(wait_for_ready)
-        self.app[qseevt_luanch_window_name][btn_run_analysis_on_existing_log_file].send_keystrokes(space_keystrokes)
+        self.app[qseevt_luanch_window_name][
+            btn_run_analysis_on_existing_log_file
+        ].send_keystrokes(space_keystrokes)
         self.app[log_analysis_window_name].wait(wait_for_ready)
         # for i, child in enumerate(self.app[log_analysis_window_name].children()):
         #     print(i, ":", child)
@@ -150,7 +156,9 @@ class Qseevt(object):
 
     def run_log_analysis(self):
         self.app[log_analysis_window_name].wait(wait_for_ready)
-        self.app[log_analysis_window_name][btn_run_log_analysis].send_keystrokes(space_keystrokes)
+        self.app[log_analysis_window_name][btn_run_log_analysis].send_keystrokes(
+            space_keystrokes
+        )
         self.app[log_analysis_window_name].wait(wait_for_ready)
 
     def get_status_text(self):
@@ -206,7 +214,8 @@ class Qseevt(object):
         text_list = self.get_last_info_text()
         if isinstance(text_list, list) and 'Log analysis completed!' in text_list:
             return True
-        else: return False
+        else:
+            return False
 
         # hwd = w_handle[0]
         # winlist = children(hwd)
@@ -295,7 +304,6 @@ if __name__ == "__main__":
     ret_val = False
     wait_until = 'ready'
 
-
     print(is_admin())
 
     if is_admin():
@@ -321,4 +329,6 @@ if __name__ == "__main__":
     else:
         print(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
         # Re-run the program with admin rights
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+        ctypes.windll.shell32.ShellExecuteW(
+            None, "runas", sys.executable, " ".join(sys.argv), None, 1
+        )

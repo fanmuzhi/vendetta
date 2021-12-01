@@ -13,6 +13,7 @@ import subprocess
 import time
 import json
 
+
 class ADB:
     """
     adb class for adb operations, operated based on subprocess module
@@ -24,10 +25,11 @@ class ADB:
         self.adb_cmd_head = ['adb']
         if self._device_id:
             self.adb_cmd_head.extend(['-s', self._device_id])
-        self.adb_root()
+        # self.adb_root()
 
     @staticmethod
     def adb_devices():
+        device_id = None
         cmd_adb_devices = ['adb', 'devices']
         ret = subprocess.run(
             cmd_adb_devices,
@@ -39,9 +41,10 @@ class ADB:
             timeout=20,
         )
         devices = ret.stdout.split()[4:]
-        if not devices:
-            raise RuntimeError('empty adb devices list')
-        device_id = devices[0]
+        if devices:
+            # raise RuntimeError('empty adb devices list')
+            # devices
+            device_id = devices[0]
         return device_id
 
     def adb_shell_popen(self, cmd):
@@ -136,7 +139,9 @@ class ADB:
 
     def adb_sensor_info(self):
         cmd = ['ssc_sensor_info']
-        ret = self.adb_shell_run(cmd, stdout=subprocess.PIPE, encoding='utf-8', check=True, timeout=60)
+        ret = self.adb_shell_run(
+            cmd, stdout=subprocess.PIPE, encoding='utf-8', check=True, timeout=60
+        )
         return ret.stdout
 
     def imu_bias_values(self, productname, sensor):
@@ -148,9 +153,20 @@ class ADB:
         text = self.adb_cat(biasfile)
         json_buffer = json.loads(text.decode())
         root = list(json_buffer.keys())[0]
-        return int(json_buffer[root]['x']['ver']), \
-               int(json_buffer[root]['y']['ver']), \
-               int(json_buffer[root]['z']['ver']),
+        return (
+            int(json_buffer[root]['x']['ver']),
+            int(json_buffer[root]['y']['ver']),
+            int(json_buffer[root]['z']['ver']),
+        )
+
+    def update_registry_file(self, new_registry_file):
+        self.adb_root()
+        self.adb_remount()
+        self.adb_rm_all_files_in(r'/mnt/vendor/persist/sensors/registry/registry/*')
+        self.adb_push(new_registry_file, r'/vendor/etc/sensors/config/')
+        self.adb_sync()
+        self.adb_reboot()
+        self.adb_wait_for_device()
 
 
 if __name__ == '__main__':
