@@ -18,6 +18,8 @@ from lib.quts.quts import *
 from lib.seevt.seevt import Qseevt
 from lib.utils import *
 
+log_path = r"C:\temp\testlog"
+
 productname = 'bmi3x0'
 n_hw = 1
 hwid = list(range(n_hw))
@@ -99,10 +101,11 @@ def match_summary_text(diag_service, re_pattern, data_queue='data'):
 
 
 def pytest_generate_tests(metafunc):
-    fixturename = ''
+    # fixturename = ''
     params_list = []
-    if "factorytest" in metafunc.fixturenames:
-        fixturename = 'factorytest'
+    # if "factorytest" in metafunc.fixturenames:
+    if "test_factory_test" == metafunc.definition.name:
+        # fixturename = 'factorytest'
         params_sensor = list(itertools.product(sensor_list, [None]))
         params_factest_type = list(itertools.product(factest_type_list, [None]))
         params_odr = null_params
@@ -121,8 +124,10 @@ def pytest_generate_tests(metafunc):
             )
         )
 
-    if "streamtest" in metafunc.fixturenames:
-        fixturename = 'streamtest'
+    # if "streamtest" in metafunc.fixturenames:
+    if "test_data_stream" == metafunc.definition.name:
+
+        # fixturename = 'streamtest'
         params_sensor = list(itertools.product(sensor_list, [None]))
         params_dur = list(itertools.product([sensor_streamtest_dur], [None]))
         if "change_registry_res_value" in metafunc.fixturenames:
@@ -150,8 +155,9 @@ def pytest_generate_tests(metafunc):
             )
         )
 
-    if "intern_conc_streamtest" in metafunc.fixturenames:
-        fixturename = 'intern_conc_streamtest'
+    # if "intern_conc_streamtest" in metafunc.fixturenames:
+    if 'test_internal_stream_concurrency' == metafunc.definition.name:
+        # fixturename = 'intern_conc_streamtest'
         params_sensor = [tuple(itertools.repeat(sensor, 2)) for sensor in sensor_list]
         params_dur = [(30, 30)]
         params_odr = [(-1, -2), (-3.1, -3.2)]
@@ -169,8 +175,10 @@ def pytest_generate_tests(metafunc):
             )
         )
 
-    if "intern_conc_factest" in metafunc.fixturenames:
-        fixturename = 'intern_conc_factest'
+    # if "intern_conc_factest" in metafunc.fixturenames:
+    if 'test_internal_stream_factory_concurrency' == metafunc.definition.name:
+
+        # fixturename = 'intern_conc_factest'
         params_sensor = [tuple(itertools.repeat(sensor, 2)) for sensor in sensor_list]
         params_odr = list(itertools.product([-1], [None]))
         params_factest_type = list(itertools.product([None], [1, 2]))
@@ -188,8 +196,9 @@ def pytest_generate_tests(metafunc):
             )
         )
 
-    if "extern_conc_streamtest" in metafunc.fixturenames:
-        fixturename = 'extern_conc_streamtest'
+    # if "extern_conc_streamtest" in metafunc.fixturenames:
+    if "test_external_concurrency" == metafunc.definition.name:
+        # fixturename = 'extern_conc_streamtest'
         params_sensor = list(itertools.permutations(sensor_list, 2))
         params_dur = null_params
         params_odr = [(-1, -2), (-1, -3.1), (-2, -3.2), (-3.0, -3.1)]
@@ -220,7 +229,79 @@ def pytest_generate_tests(metafunc):
     ]
     ids = [test_case_id_str(dict(zip(using_ssc_drva_keys, param))) for param in params_list]
 
-    metafunc.parametrize(fixturename, params_sets_list, ids=ids)
+    if 'collect_sscdrva_result' in metafunc.fixturenames:
+        metafunc.parametrize(
+            'collect_sscdrva_result',
+            params_sets_list,
+            ids=ids,
+            indirect=True,
+        )
+    # if 'csv_outcome' in metafunc.fixturenames:
+    #     metafunc
+
+@pytest.fixture()
+def collect_sscdrva_result(ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, quts_diag_service, data_queue, request):
+    c = None
+    diag_packets_list = []
+    bias_result = []
+    csv_files = []
+    result = {
+        'params_set': request.param,
+        'diag_packets_list': diag_packets_list,
+        'bias_values': [],
+        'csvfiles': csv_files}
+    file_name = rf"{log_file_name(request.param)}"
+    hdflogfile = os.path.join(log_path, f'{file_name}.hdf')
+    has_factory_test = any(['factory_test' in param for param in request.param if param])
+    has_datastream = any(['sample_rate' in param for param in request.param if param])
+    has_calibration = False
+    if has_factory_test:
+        has_calibration = any([param.get('factory_test', -1) == 2 for param in request.param if param])
+        print("*" * 20,
+              has_calibration,
+              "*" * 20, )
+        if has_calibration:
+            for param in request.param:
+                if param and param.get('factory_test', -1) == 2:
+                    calib_sensor = param['sensor']
+                    print(calib_sensor)
+
+                    prev_biasvals = imu_bias_values(productname, calib_sensor)
+                    result['bias_values'].append(prev_biasvals)
+
+    if has_datastream:
+        quts_dev_mgr.startLogging()
+    ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(param_sets=request.param)
+    ssc_drva.ssc_drva_run(ssc_drva_cmd)
+    diag_packets = quts_diag_service.getDataQueueItems(data_queue, 1, 20)
+    while diag_packets:
+        diag_packets_list.append(diag_packets[0])
+        diag_packets = quts_diag_service.getDataQueueItems(data_queue, 1, 20)
+    # result.update({'diag_packets_list': diag_packets_list})
+    if has_calibration and calib_sensor:
+        post_biasvals = imu_bias_values(productname, calib_sensor)
+        result['bias_values'].append(post_biasvals)
+        # result.update({'bias_values': [prev_biasvals, post_biasvals]})
+    if has_datastream:
+        device = get_device_handle(quts_dev_mgr)
+        diag_protocol = get_diag_protocal_handle(quts_dev_mgr, device)
+        quts_dev_mgr.saveLogFilesWithFilenames({diag_protocol: hdflogfile})
+        qseevt.set_hdffile_text(hdflogfile)
+        qseevt.set_sensor_info_file_text(info_file=sensor_info_txt)
+        qseevt.run_log_analysis()
+        while not qseevt.analyze_complete():
+            time.sleep(0.1)
+        parsed_folder = os.path.splitext(hdflogfile)[0]
+        csv_data_logs = []
+        for par, dirs, files in os.walk(parsed_folder):
+            # csv_data_logs += [os.path.join(par, f) for f in files if valid_csv_name(f)]
+            for f in files:
+                if valid_csv_name(f):
+                    csv_files.append(os.path.join(par, f))
+
+        result.update({'csvfiles': csv_data_logs})
+
+    return result
 
 
 @pytest.fixture(scope='session', autouse=True)

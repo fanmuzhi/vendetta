@@ -182,17 +182,20 @@ diagService.createDataQueue("data", diagPacketFilter, returnObjDiag)
 print("sleeping 10 secs")
 time.sleep(10)
 diagPackets = diagService.getDataQueueItems("data", 1, 20)
+diag_packet_list = list()
 while diagPackets:
-    for i in range(len(diagPackets)):
-        print(
-            diagPackets[i].packetId,
-            ' ',
-            diagPackets[i].parsedText,
-            " ",
-            diagPackets[i].summaryText,
-        )
+    diag_packet_list.append(diagPackets[0])
+    # for i in range(len(diagPackets)):
+    print(
+        diagPackets[0].packetId,
+        ' ',
+        diagPackets[0].parsedText,
+        " ",
+        diagPackets[0].summaryText,
+    )
     print("----------------------------------------------------")
     diagPackets = diagService.getDataQueueItems("data", 1, 20)
+
 
     # print([f"{k}: {v}" for k, v in diagPackets[i].__dict__])
     # pp(
@@ -216,5 +219,5 @@ deviceManager.saveLogFilesWithFilenames({562954248388608: r"C:\temp\testlog\fmz.
 diagService.destroyService()
 
 client.stop()
-
+print(diag_packet_list)
 print("All Done")

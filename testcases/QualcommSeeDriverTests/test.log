@@ -1,4 +1,13 @@
-2021-11-29-15-31-20 - ssc_drva.py - ssc_drva - ssc_drva_run - 78 - INFO - 
+2021-12-03-17-45-33 - utils.py - utils - _init_num_threads - 157 - INFO - NumExpr defaulting to 8 threads.
+2021-12-03-17-45-38 - ssc_drva.py - ssc_drva - ssc_drva_run - 78 - INFO - 
 execute ssc_drva_test -sensor=accel -duration=5 -factory_test=1 -hw_id=0
-2021-11-29-15-31-28 - ssc_drva.py - ssc_drva - ssc_drva_run - 78 - INFO - 
+2021-12-03-17-45-47 - ssc_drva.py - ssc_drva - ssc_drva_run - 78 - INFO - 
 execute ssc_drva_test -sensor=accel -duration=5 -factory_test=2 -hw_id=0
+2021-12-03-17-45-55 - ssc_drva.py - ssc_drva - ssc_drva_run - 78 - INFO - 
+execute ssc_drva_test -sensor=accel -duration=5 -factory_test=3 -hw_id=0
+2021-12-03-17-46-02 - ssc_drva.py - ssc_drva - ssc_drva_run - 78 - INFO - 
+execute ssc_drva_test -sensor=gyro -duration=5 -factory_test=1 -hw_id=0
+2021-12-03-17-46-10 - ssc_drva.py - ssc_drva - ssc_drva_run - 78 - INFO - 
+execute ssc_drva_test -sensor=gyro -duration=5 -factory_test=2 -hw_id=0
+2021-12-03-17-46-18 - ssc_drva.py - ssc_drva - ssc_drva_run - 78 - INFO - 
+execute ssc_drva_test -sensor=gyro -duration=5 -factory_test=3 -hw_id=0

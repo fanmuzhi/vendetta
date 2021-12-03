@@ -167,6 +167,7 @@ class ADB:
         self.adb_sync()
         self.adb_reboot()
         self.adb_wait_for_device()
+        self.adb_root()
 
 
 if __name__ == '__main__':

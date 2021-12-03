@@ -93,18 +93,20 @@ def imu_bias_values(productname, sensor):
 
 
 def collect_csvs(ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, param_sets):
-    filename = rf"C:\temp\testlog\{log_file_name(param_sets)}.hdf"
+    log_path = r"C:\temp\testlog"
+    file_name = rf"{log_file_name(param_sets)}.hdf"
+    logfile = os.path.join(log_path, file_name)
     ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(param_sets=param_sets)
     # print(" ".join(ssc_drva_cmd))
 
-    with logging_diag_hdf(quts_dev_mgr, filename):
+    with logging_diag_hdf(quts_dev_mgr, logfile):
         ssc_drva.ssc_drva_run(ssc_drva_cmd)
-    qseevt.set_hdffile_text(filename)
+    qseevt.set_hdffile_text(logfile)
     qseevt.set_sensor_info_file_text(info_file=sensor_info_txt)
     qseevt.run_log_analysis()
     while not qseevt.analyze_complete():
         time.sleep(0.1)
-    parsed_folder = os.path.splitext(filename)[0]
+    parsed_folder = os.path.splitext(logfile)[0]
     csv_data_logs = []
     for par, dirs, files in os.walk(parsed_folder):
         csv_data_logs += [os.path.join(par, f) for f in files if valid_csv_name(f)]

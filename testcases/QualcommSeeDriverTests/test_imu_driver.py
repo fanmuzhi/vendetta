@@ -50,18 +50,30 @@ def match_summary_text(diag_service, re_pattern, data_queue='data'):
 # @pytest.mark.skip
 class TestFactoryTest(object):
     # @pytest.mark.skip
-    def test_factory_test(self, factorytest, ssc_drva, quts_diag_service, data_queue):
-        sensor = factorytest[0]["sensor"]
-        fac_test = factorytest[0]["factory_test"]
-        prev_biasvals = imu_bias_values(productname, sensor)
-        cmd = ssc_drva.set_ssc_drva_cmd(factorytest)
-        ssc_drva.ssc_drva_run(cmd)
+    def test_factory_test(self, collect_sscdrva_result,
+                          # ssc_drva_cmd_params, ssc_drva, quts_diag_service, data_queue
+                          ):
+        # sensor = ssc_drva_cmd_params[0]["sensor"]
+        fac_test = collect_sscdrva_result['params_set'][0]["factory_test"]
+        # prev_biasvals = imu_bias_values(productname, sensor)
+        # cmd = ssc_drva.set_ssc_drva_cmd(ssc_drva_cmd_params)
+        # ssc_drva.ssc_drva_run(cmd)
+        re_pattern = rf'Test level {fac_test}: PASS'
+        for diag_packets in collect_sscdrva_result['diag_packets_list']:
+            if re.search(re_pattern, diag_packets.summaryText):
+                found = True
+                break
+        else:
+            found = False
         with pytest.assume:
-            assert match_summary_text(
-                quts_diag_service, rf'Test level {fac_test}: PASS', data_queue
-            ), f"key word f'Test level {fac_test}: PASS' not found "
+            assert found, f"key word f'Test level {fac_test}: PASS' not found "
+        # with pytest.assume:
+        #     assert match_summary_text(
+        #         quts_diag_service, rf'Test level {fac_test}: PASS', data_queue
+        #     ), f"key word f'Test level {fac_test}: PASS' not found "
         if fac_test == 2:
-            post_biasvals = imu_bias_values(productname, sensor)
+            prev_biasvals, post_biasvals = collect_sscdrva_result['bias_values']
+
             with pytest.assume:
                 assert [pre + 1 for pre in prev_biasvals] == list(
                     post_biasvals
@@ -71,13 +83,15 @@ class TestFactoryTest(object):
 # @pytest.mark.skip
 class TestDataStream(object):
     def test_data_stream(
-        self, streamtest, ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt,
+        self, collect_sscdrva_result,
+            # ssc_drva_cmd_params, ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt,
     ):
-        param_sets = streamtest
-        log_csv_list = collect_csvs(
-            ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, param_sets
-        )
-        for csv_log in log_csv_list:
+        # param_sets = ssc_drva_cmd_params
+        # log_csv_list = collect_csvs(
+        #     ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, param_sets
+        # )
+        # for csv_log in log_csv_list:
+        for csv_log in collect_sscdrva_result['csvfiles']:
             log_obj = std_sensor_event_log.SeeDrvLog(csv_log, skip_data=1)
             sensor_name = log_obj.sensor
             if not log_obj.odr or log_obj.dest_sensor != 'da_test':
@@ -97,9 +111,9 @@ class TestDataStream(object):
 class TestInternalConcurrency:
     # @pytest.mark.skip
     def test_internal_stream_concurrency(
-        self, intern_conc_streamtest, ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt,
+        self, ssc_drva_cmd_params, ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt,
     ):
-        param_sets = intern_conc_streamtest
+        param_sets = ssc_drva_cmd_params
         log_csv_list = collect_csvs(
             ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, param_sets
         )
@@ -121,7 +135,7 @@ class TestInternalConcurrency:
     # @pytest.mark.skip
     def test_internal_stream_factory_concurrency(
         self,
-        intern_conc_factest,
+        ssc_drva_cmd_params,
         ssc_drva,
         quts_dev_mgr,
         quts_diag_service,
@@ -129,12 +143,11 @@ class TestInternalConcurrency:
         qseevt,
         sensor_info_txt,
     ):
-        param_sets = intern_conc_factest
-        sensor = param_sets[0]["sensor"]
-        fac_test = param_sets[1]["factory_test"]
+        sensor = ssc_drva_cmd_params[0]["sensor"]
+        fac_test = ssc_drva_cmd_params[1]["factory_test"]
         prev_biasvals = imu_bias_values(productname, sensor)
         log_csv_list = collect_csvs(
-            ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, param_sets
+            ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, ssc_drva_cmd_params
         )
         with pytest.assume:
             assert match_summary_text(
@@ -164,11 +177,11 @@ class TestInternalConcurrency:
 class TestExternalConcurrency:
     # @pytest.mark.skip
     def test_external_concurrency(
-        self, extern_conc_streamtest, ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt,
+        self, ssc_drva_cmd_params, ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt,
     ):
-        param_sets = extern_conc_streamtest
+        # param_sets = ssc_drva_cmd_params
         log_csv_list = collect_csvs(
-            ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, param_sets
+            ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, ssc_drva_cmd_params
         )
         for csv_log in log_csv_list:
             log_obj = std_sensor_event_log.SeeDrvLog(csv_log, skip_data=1)
