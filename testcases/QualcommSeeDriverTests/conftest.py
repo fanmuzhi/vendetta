@@ -260,6 +260,16 @@ def ssc_drva(adb):
 
 
 # quts fixtures
+@pytest.fixture(scope='session', autouse=True)
+def add_quts_sys_path():
+    if sys.platform.startswith("linux"):
+        sys.path.append('/opt/qcom/QUTS/Support/python')
+    elif sys.platform.startswith("win"):
+        sys.path.append('C:\Program Files (x86)\Qualcomm\QUTS\Support\python')
+    elif sys.platform.startswith("darwin"):
+        sys.path.append('/Applications/Qualcomm/QUTS/QUTS.app/Contents/Support/python')
+
+
 @pytest.fixture(scope="package")
 def quts_client():
     client = QutsClient.QutsClient("BST MEMS Sensor Driver Test")

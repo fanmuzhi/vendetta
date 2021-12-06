@@ -203,7 +203,6 @@ def resvalue_id_str(registry_dict):
 
 
 # @pytest.mark.skip
-@pytest.mark.usefixtures('reset_origin_registry')
 @pytest.mark.parametrize(
     'change_registry_res_value',
     ranges,

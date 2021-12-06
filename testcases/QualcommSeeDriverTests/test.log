@@ -1,4 +1,0 @@
-2021-11-29-15-31-20 - ssc_drva.py - ssc_drva - ssc_drva_run - 78 - INFO - 
-execute ssc_drva_test -sensor=accel -duration=5 -factory_test=1 -hw_id=0
-2021-11-29-15-31-28 - ssc_drva.py - ssc_drva - ssc_drva_run - 78 - INFO - 
-execute ssc_drva_test -sensor=accel -duration=5 -factory_test=2 -hw_id=0
