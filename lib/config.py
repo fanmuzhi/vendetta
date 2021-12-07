@@ -15,10 +15,7 @@ datetime_format = '%Y%m%d%H%M%S'
 seevt_progdata_dir = r'C:\ProgramData\Qualcomm\Qualcomm_SEEVT'
 seevt_protos_dir = os.path.join(seevt_progdata_dir, 'Protos')
 proto_config_file = os.path.join(seevt_progdata_dir, 'Protos.config')
-platform_code = {
-    'hdk8250': 'kona',
-    'hdk8350': 'lahaina'
-}
+platform_code = {'hdk8250': 'kona', 'hdk8350': 'lahaina'}
 
 if LOG_LEVEL > logging.DEBUG:
     ssc_drva_stdout = False
@@ -91,8 +88,8 @@ odr_to_interval = {
 }
 
 res_values = {
-    Sensor.acc.value: {0: '2g', 1: '4g', 2: 'g', 3: '16g',},
-    Sensor.gyr.value: {1: '250dps', 2: '500dps', 3: '1000dps', 4: '2000dps',},
+    Sensor.acc.value: {0: '2g', 1: '4g', 2: '8g', 3: '16g'},
+    Sensor.gyr.value: {1: '250dps', 2: '500dps', 3: '1000dps', 4: '2000dps'},
 }
 
 

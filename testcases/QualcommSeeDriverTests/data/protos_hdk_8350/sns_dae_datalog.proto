@@ -1,0 +1,82 @@
+// @file sns_dae_datalog.proto
+//
+// Public definitions for logging data within DAE
+//
+// Copyright (c) 2020 Qualcomm Technologies, Inc.
+// All Rights Reserved.
+// Confidential and Proprietary - Qualcomm Technologies, Inc.
+
+syntax = "proto2";
+import "nanopb.proto";
+import "sns_dae.proto";
+
+enum sns_dae_datalog_msgid {
+  option (nanopb_enumopt).long_names = false;
+
+  // Emtpy request to establish stream
+  SNS_DAE_DATALOG_MSGID_SNS_DAE_DATALOG_START              = 650;
+
+  // Accel configuration to be logged via SensorAPI logs
+  // Set when sensor starts a stream, if config changes.
+  SNS_DAE_DATALOG_MSGID_SNS_DAE_DATALOG_ACCEL_CONFIG_EVENT = 1250;
+
+  // Accel data to be logged via SensorAPI logs
+  SNS_DAE_DATALOG_MSGID_SNS_DAE_DATALOG_ACCEL_DATA_EVENT   = 1251;
+}
+
+message sns_dae_datalog_accel_config_event {
+  // name of the function table for the DAE accel driver
+  required string                     func_table_name = 1 [(nanopb).max_size = 32];
+
+  // map to convert raw x/y/z axis to SEE coordinate system
+  repeated sensor_to_phone_conversion axis_map        = 2 [(nanopb).max_count = 3];
+
+  // Offset in m/s^2 of x/y/z.
+  // Axis is unmapped / raw axis. Use the "sensor_to_phone_conversion" to get phone axis
+  repeated float                      offset          = 3 [(nanopb).max_count = 3]; 
+
+  // Axis is unmapped / raw axis. Use the "sensor_to_phone_conversion" to get phone axis
+  repeated float                      scale_factor    = 4 [(nanopb).max_count = 3];
+
+  // Accel ODR, in Hz
+  required int32                      odr             = 5;
+
+  // Accel range, in G's
+  required int32                      range           = 6;
+
+  // attribute <-> value pairs for additional identification  
+  repeated sns_accel_attribute        accel_attr      = 7 [(nanopb).max_count = 5];
+
+  // The data age limit (in ticks) as specified by the accel driver
+  required uint64                     data_age_limit  = 8;
+
+  // DAE watermark
+  required uint32                     dae_watermark   = 9;
+}
+
+message sns_dae_datalog_accel_data_event {
+  // Estimated measurement ts
+  // Note: This is the measurement TS as estimated by the DAE. It will not
+  // be the same as the measurent TS produced by the accel driver.
+  // This value is estimated, and does not need to be as accurate as the
+  // timestamp for the final accel event
+  required uint64 meas_ts = 1;
+  
+  // X,Y,Z values are 16-bit full-range accel data
+  // Axis is unmapped / raw axis. Use the "sensor_to_phone_conversion" to get phone axis
+  required sint32 raw_x = 2;
+  required sint32 raw_y = 3;
+  required sint32 raw_z = 4;
+
+  // example of how to do conversion to std_sensor_event
+  // To convert the raw_x value to a value in an sns_std_sensor_event:
+  // std_event.data[datalog_config.axis_map[0].opaxis] =
+  //   (datalog_config.axis_map[0].invert] ? -1 : 1)
+  //   * datalog_event.raw_x / 32768
+  //   * datalog_config.range
+  //   * datalog_config.scale_factor[0]
+  //   * 9.80665
+  //   - datalog_config.offset[0]
+  // Note: The SEE accel driver may apply other conversions to the x/y/z output,
+  // such as doing temperature compensation.
+}

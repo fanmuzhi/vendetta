@@ -23,6 +23,7 @@ import time
 
 # from log import logger
 import ctypes, sys
+from lib.utils import *
 
 # logger = logging.getLogger(__name__)
 seevt_exe = r'C:\Program Files\Qualcomm\Qualcomm_SEEVT\Qualcomm_SEEVT.exe'
@@ -112,13 +113,6 @@ space_keystrokes = '{SPACE}'
 #         win32gui.EnumChildWindows(parent, lambda h_wnd, param: param.append(h_wnd), h_wnd_child_list)
 #         self.show_windows(h_wnd_child_list)
 #         return h_wnd_child_list
-def is_admin():
-    try:
-        isadmin = ctypes.windll.shell32.IsUserAnAdmin()
-        print(isadmin)
-        return isadmin
-    except:
-        return False
 
 
 class Qseevt(object):
@@ -222,6 +216,21 @@ class Qseevt(object):
         #
         # richedit_content = dumpwindow(winlist[2])['text']
         # return richedit_content
+
+    def parse_hdf_to_csv(self, hdflogfile, sensor_info_txt):
+        self.set_hdffile_text(hdflogfile)
+        self.set_sensor_info_file_text(info_file=sensor_info_txt)
+        self.run_log_analysis()
+        while not self.analyze_complete():
+            time.sleep(0.1)
+        parsed_folder = os.path.splitext(hdflogfile)[0]
+        csv_data_logs = []
+        for par, dirs, files in os.walk(parsed_folder):
+            # csv_data_logs += [os.path.join(par, f) for f in files if valid_csv_name(f)]
+            for f in files:
+                if valid_csv_name(f):
+                    csv_data_logs.append(os.path.join(par, f))
+        return csv_data_logs
 
 
 def analyze_hdf_file(hdf_file, seevt_exe, out=False):

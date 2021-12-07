@@ -28,10 +28,6 @@ def is_admin():
         return False
 
 
-def file_exists(file):
-    return os.path.exists(file)
-
-
 def datetime_str():
     return datetime.now().strftime(datetime_format)
 
