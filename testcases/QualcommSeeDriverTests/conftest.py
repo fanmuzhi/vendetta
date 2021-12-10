@@ -6,24 +6,28 @@
 __filename__ = "conftest.py"
 __version__ = "init"
 __author__ = "@henry.fan"
-
+import os
 import pytest
 import itertools
 import xml.dom.minidom
-import lib.seevt.seevt
 import csv
-import shutil
+import json
+
 from lib.ssc_drva.ssc_drva import SscDrvaTest
 from lib.quts.quts import *
-from lib.seevt.seevt import Qseevt
-from lib.utils import *
+from lib.adb.adb import ADB
+from lib import qseevt
+import lib.utils as utils
+import lib.config as cfg
 
-log_path = r"C:\temp\testlog"
-
-productname = 'bmi3x0'
+default_log_dir = os.path.join(os.path.dirname(__file__), 'logs')
+default_report_dir = os.path.join(os.path.dirname(__file__), 'reports')
+fdmc = os.path.join(os.path.dirname(__file__), 'mydmc.dmc')
+# log_path = r"C:\temp\testlog"
+# platform = 'hdk8350'
+# productname = 'bmi3x0'
 n_hw = 1
 hwid = list(range(n_hw))
-sensor_list = ['accel', 'gyro']
 streamtest_odr_list = [-2, 50, 100, 200, -1, -3.0]
 # streamtest_odr_list = [-2, 50]
 factest_type_list = [1, 2, 3]
@@ -31,7 +35,16 @@ sensor_streamtest_dur = 30
 sensor_factest_dur = 5
 ssc_drva_delay = 2
 null_params = [None]
+# acc_res_list = [0, 1, 2, 3]
+# gyr_res_list = [1, 2, 3, 4]
+# mag_res_list = [1, 2, 3, 4]
 
+res_squence = [
+    {cfg.Sensor.acc.value: 0, cfg.Sensor.gyr.value: 1, cfg.Sensor.mag.value: 1},
+    {cfg.Sensor.acc.value: 1, cfg.Sensor.gyr.value: 2, cfg.Sensor.mag.value: 2},
+    {cfg.Sensor.acc.value: 2, cfg.Sensor.gyr.value: 3, cfg.Sensor.mag.value: 3},
+    {cfg.Sensor.acc.value: 3, cfg.Sensor.gyr.value: 4, cfg.Sensor.mag.value: 4},
+]
 
 using_ssc_drva_keys = [
     'sensor',
@@ -50,6 +63,33 @@ ranges = [
 ]
 
 driver_msg_log_headers = ['Timestamp', 'Name', 'Message']
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--product",
+        action="store",
+        default="",
+        help="Product name in registry file, eg: 'bmi3x0'",
+    )
+    parser.addoption(
+        "--platform",
+        action="store",
+        default="hdk8350",
+        help="qualcomm dev board, default=hdk8350",
+    )
+    parser.addoption(
+        "--log_dir",
+        action="store",
+        default=default_log_dir,
+        help="Customize an location to save test log files",
+    )
+    parser.addoption(
+        "--report_dir",
+        action="store",
+        default=default_report_dir,
+        help="Customize an location to save test report logs",
+    )
 
 
 def resvalue_id_str(registry_dict):
@@ -116,9 +156,22 @@ def match_summary_text(diag_service, re_pattern, data_queue='data'):
     return found
 
 
+@pytest.fixture(scope='package', autouse=True)
+def sensor_list(request):
+    product = request.config.getoption("--product")
+    sensor_list = utils.get_sensorlist(product)
+    if not sensor_list:
+        pytest.exit("invalid product to test ")
+    else:
+        return sensor_list
+
+
 def pytest_generate_tests(metafunc):
     # fixturename = ''
     params_list = []
+    productname = getattr(metafunc.config.option, 'product', "")
+    sensor_list = utils.get_sensorlist(productname)
+
     if "test_factory_test" == metafunc.definition.name:
         # fixturename = 'factorytest'
         params_sensor = list(itertools.product(sensor_list, [None]))
@@ -139,14 +192,6 @@ def pytest_generate_tests(metafunc):
             )
         )
 
-    if "change_registry_res_value" in metafunc.fixturenames:
-        metafunc.parametrize(
-            'change_registry_res_value',
-            ranges,
-            ids=[resvalue_id_str(r) for r in ranges],
-            indirect=True,
-        )
-
     if "test_data_stream" == metafunc.definition.name:
         params_sensor = list(itertools.product(sensor_list, [None]))
         params_dur = list(itertools.product([sensor_streamtest_dur], [None]))
@@ -159,8 +204,8 @@ def pytest_generate_tests(metafunc):
         else:
             params_odr = list(itertools.product(streamtest_odr_list, [None]))
 
-        if "dynarange" in metafunc.fixturenames:
-            params_sensor = list(itertools.product(sensor_list, [None]))
+        # if "dynarange" in metafunc.fixturenames:
+        #     params_sensor = list(itertools.product(sensor_list, [None]))
         params_factest_type = null_params
         params_hwid = list(itertools.product(hwid, [None]))
         params_delay = null_params
@@ -212,6 +257,8 @@ def pytest_generate_tests(metafunc):
         )
 
     if "test_external_concurrency" == metafunc.definition.name:
+        if len(sensor_list) < 2:
+            pytest.skip("skip")
         params_sensor = list(itertools.permutations(sensor_list, 2))
         params_dur = null_params
         params_odr = [(-1, -2), (-1, -3.1), (-2, -3.2), (-3.0, -3.1)]
@@ -244,6 +291,19 @@ def pytest_generate_tests(metafunc):
         test_case_id_str(dict(zip(using_ssc_drva_keys, param))) for param in params_list
     ]
 
+    if "change_registry_res_value" in metafunc.fixturenames:
+        # sensors = [sensor_list]
+        args = [cfg.res_values[sensor].keys() for sensor in sensor_list]
+        rvs = list(zip(*args))
+        ranges = [dict(zip(sensor_list, t)) for t in rvs]
+        metafunc.parametrize(
+            'change_registry_res_value',
+            ranges,
+            ids=[resvalue_id_str(r) for r in ranges],
+            indirect=True,
+            # scope='class'
+        )
+
     if 'collect_sscdrva_result' in metafunc.fixturenames:
         metafunc.parametrize(
             'collect_sscdrva_result', params_sets_list, ids=ids, indirect=True,
@@ -254,6 +314,8 @@ def pytest_generate_tests(metafunc):
 def collect_sscdrva_result(
     ssc_drva, quts_dev_mgr, quts_diag_service, data_queue, request,
 ):
+    productname = request.config.getoption("--product")
+    log_path = request.config.getoption("--log_dir")
     calib_sensor = None
     diag_packets_list = []
     bias_result = []
@@ -264,7 +326,7 @@ def collect_sscdrva_result(
         'hdf': None,
         'drv_log': None,
     }
-    time_str = f'{datetime.now().strftime(datetime_format)}'
+    time_str = f'{utils.datetime.now().strftime(utils.datetime_format)}'
     file_name = f"{time_str}_{request.cls.__name__}_{request.node.name}"
     # file_name = rf"{log_file_name(request.param)}"
     hdflogfile = os.path.join(log_path, f'{file_name}.hdf')
@@ -283,7 +345,7 @@ def collect_sscdrva_result(
             for param in request.param:
                 if param and param.get('factory_test', -1) == 2:
                     calib_sensor = param['sensor']
-                    prev_biasvals = imu_bias_values(productname, calib_sensor)
+                    prev_biasvals = utils.imu_bias_values(productname, calib_sensor)
                     result['bias_values'].append(prev_biasvals)
 
     if hdf_logging:
@@ -297,7 +359,7 @@ def collect_sscdrva_result(
         diag_packets_list.append(diag_packets[0])
         diag_packets = quts_diag_service.getDataQueueItems(data_queue, 1, 20)
     if has_calibration and calib_sensor:
-        post_biasvals = imu_bias_values(productname, calib_sensor)
+        post_biasvals = utils.imu_bias_values(productname, calib_sensor)
         bias_result.append(post_biasvals)
     if hdf_logging:
         device = get_device_handle(quts_dev_mgr)
@@ -332,10 +394,16 @@ def save_drv_msglog(collect_sscdrva_result):
 
 @pytest.fixture(scope='session', autouse=True)
 def isadmin():
-    if is_admin():
+    if utils.is_admin():
         return True
     else:
         pytest.exit("Please run this app as adminisitrator")
+
+
+@pytest.fixture(scope='package', autouse=True)
+def mk_dirs():
+    os.makedirs(default_log_dir, exist_ok=True)
+    os.makedirs(default_report_dir, exist_ok=True)
 
 
 # adb fixtures
@@ -367,6 +435,8 @@ def add_quts_sys_path():
         sys.path.append('C:\Program Files (x86)\Qualcomm\QUTS\Support\python')
     elif sys.platform.startswith("darwin"):
         sys.path.append('/Applications/Qualcomm/QUTS/QUTS.app/Contents/Support/python')
+    else:
+        pytest.exit("unrecognized system platform")
 
 
 @pytest.fixture(scope="package")
@@ -470,15 +540,19 @@ def quts_diag_service(quts_client, quts_device_handle):
 
 @pytest.fixture(scope="package", autouse=True)
 def quts_load_config(quts_diag_service):
-    with open(r'C:\Users\FNH1SGH\Desktop\mydmc.dmc', 'rb') as f:
+    with open(fdmc, 'rb') as f:
         quts_diag_service.setLoggingMask(f.read(), 2)  # 2 for dmc file
     if 0 != quts_diag_service:
         quts_diag_service.getLastError()
 
 
 @pytest.fixture(scope='package')
-def qseevt(qseevt_protos_config):
-    seevt = Qseevt(lib.seevt.seevt.seevt_exe)
+def qseevt_open(check_protos):
+    if not check_protos:
+        pytest.exit(
+            'No Protos imported for QSEEVT tool, please import .protos in QSEEVT'
+        )
+    seevt = qseevt.Qseevt(cfg.seevt_exe)
     seevt.run()
     seevt.enter_log_analysis_window()
     seevt.minimize()
@@ -488,26 +562,29 @@ def qseevt(qseevt_protos_config):
     del seevt
 
 
-@pytest.fixture(scope='package')
-def qseevt_protos_config():
-    folder_dst = os.path.join(cfg.seevt_protos_dir, 'protos_hdk_8350')
-    os.makedirs(folder_dst, exist_ok=True)
-    try:
-        os.system(f'copy data\protos_hdk_8350 {folder_dst}')
-        tree = xml.dom.minidom.parse(cfg.proto_config_file)
-        configuration = tree.documentElement
-        current_protos = configuration.getElementsByTagName("CurrentProtos")
-        current_protos[0].firstChild.data = folder_dst
-        with open(cfg.proto_config_file, 'w', encoding='utf-8') as f:
-            tree.writexml(f, encoding='utf-8')
-    except IOError as e:
-        pytest.exit("Unable to copy file. %s" % e)
-    except:
-        pytest.exit("Unexpected error:", sys.exc_info())
+#
+# @pytest.fixture(scope='package')
+# def qseevt_protos_config():
+#     folder_dst = os.path.join(cfg.seevt_protos_dir, 'protos_hdk_8350')
+#     os.makedirs(folder_dst, exist_ok=True)
+#     try:
+#         os.system(f'copy data\protos_hdk_8350 {folder_dst}')
+#         tree = xml.dom.minidom.parse(cfg.proto_config_file)
+#         configuration = tree.documentElement
+#         current_protos = configuration.getElementsByTagName("CurrentProtos")
+#         current_protos[0].firstChild.data = folder_dst
+#         with open(cfg.proto_config_file, 'w', encoding='utf-8') as f:
+#             tree.writexml(f, encoding='utf-8')
+#     except IOError as e:
+#         pytest.exit("Unable to copy file. %s" % e)
+#     except:
+#         pytest.exit("Unexpected error:", sys.exc_info())
 
 
 @pytest.fixture(scope='package')
-def check_protos():
+def check_protos(request):
+    platform = request.config.getoption("--platform")
+
     if not os.path.exists(cfg.seevt_protos_dir) or not os.listdir(cfg.seevt_protos_dir):
         # pytest.exit(
         #     'No Protos imported for QSEEVT tool, please import .protos in QSEEVT'
@@ -522,8 +599,8 @@ def check_protos():
         tree = xml.dom.minidom.parse(cfg.proto_config_file)
         configuration = tree.documentElement
         current_protos = configuration.getElementsByTagName("CurrentProtos")
-        if not current_protos or not current_protos[0].firstChild.data != os.path.join(
-            cfg.seevt_protos_dir, 'protos_hdk_8350'
+        if not current_protos or current_protos[0].firstChild.data != os.path.join(
+            cfg.seevt_protos_dir, f'protos_{platform}'
         ):
             # pytest.exit(
             #     'No Protos imported for QSEEVT tool, please import .protos in QSEEVT'
@@ -546,9 +623,13 @@ def sensor_info_txt(adb):
 
 
 @pytest.fixture(scope='package', autouse=True)
-def sensor_registry(adb):
+def sensor_registry(adb, request):
+    platform = request.config.getoption("--platform")
+
+    productname = request.config.getoption("--product")
+    hw_id = 0
     text = adb.adb_cat(
-        rf'/vendor/etc/sensors/config/{cfg.platform_code["hdk8350"]}_hdk_{productname}_0.json'
+        rf'/vendor/etc/sensors/config/{cfg.platform_code[platform]}_hdk_{productname}_{hw_id}.json'
     )
     registry_dict = json.loads(text)
     if not registry_dict:
@@ -558,10 +639,13 @@ def sensor_registry(adb):
 
 
 @pytest.fixture(scope='package')
-def reset_origin_registry(adb, sensor_registry, hw_id=0):
+def reset_origin_registry(adb, sensor_registry, request):
+    platform = request.config.getoption("--platform")
+    productname = request.config.getoption("--product")
     yield
+    hw_id = 0
     new_regi = sensor_registry.copy()
-    reg_file_name = rf'./{cfg.platform_code["hdk8350"]}_hdk_{productname}_{hw_id}.json'
+    reg_file_name = rf'./{cfg.platform_code[platform]}_hdk_{productname}_{hw_id}.json'
     with open(reg_file_name, 'w') as f:
         json.dump(new_regi, f)
     adb.update_registry_file(reg_file_name)
@@ -570,7 +654,7 @@ def reset_origin_registry(adb, sensor_registry, hw_id=0):
 
 
 @pytest.fixture(scope='class')
-def change_registry_res_value(adb, sensor_registry, request, hw_id=0):
+def change_registry_res_value(adb, sensor_registry, request):
     """
     [
         {'accel': 1, 'gyro': 2,},
@@ -578,11 +662,11 @@ def change_registry_res_value(adb, sensor_registry, request, hw_id=0):
     ]
     :return:
     """
+    hw_id = 0
+    productname = request.config.getoption("--product")
     new_regi = sensor_registry.copy()
     for sensor, res_val in request.param.items():
-        new_regi[f'{productname}_{hw_id}'][f'.{sensor}']['.config']['res_idx'][
-            'data'
-        ] = str(res_val)
+        new_regi[f'{productname}_{hw_id}'][f'.{sensor}']['.config']['res_idx']['data'] = str(res_val)
     reg_file_name = rf'./{cfg.platform_code["hdk8350"]}_hdk_{productname}_{hw_id}.json'
     with open(reg_file_name, 'w') as f:
         json.dump(new_regi, f)

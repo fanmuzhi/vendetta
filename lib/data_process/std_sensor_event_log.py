@@ -231,7 +231,7 @@ class SeeDrvLog:
     def check_odr(self, ignore_min=False, ignore_max=False):
         col_name = 'interval'
         intv = calc_interval_ms(self.odr)
-        l_limit = 0 * intv if not ignore_max else -float('inf')
+        l_limit = 0 * intv if not ignore_min else -float('inf')
         h_limit = 1.8 * intv if not ignore_max else float('inf')
         intv_min = self.stats[col_name]['min']
         intv_max = self.stats[col_name]['max']

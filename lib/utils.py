@@ -32,6 +32,20 @@ def datetime_str():
     return datetime.now().strftime(datetime_format)
 
 
+def get_sensorlist(productname: str):
+    if productname.lower().startswith('bmi'):
+        sensor_list = [cfg.Sensor.acc.value, cfg.Sensor.gyr.value]
+    elif productname.lower().startswith('bma'):
+        sensor_list = [cfg.Sensor.acc.value]
+    elif productname.lower().startswith('bmg'):
+        sensor_list = [cfg.Sensor.gyr.value]
+    elif productname.lower().startswith('bmx'):
+        sensor_list = [cfg.Sensor.acc.value, cfg.Sensor.gyr.value, cfg.Sensor.mag.value]
+    else:
+        sensor_list = []
+    return sensor_list
+
+
 def log_file_name(params_sets):
     if all(params_sets):
         log_name = 'Concurrency'

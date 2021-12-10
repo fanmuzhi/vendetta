@@ -1,0 +1,1 @@
+pyinstaller --clean -F -c -n vendetta --additional-hooks-dir=hooks --hidden-import six --hidden-import pytest_assume --hidden-import pytest_html --add-data "pytest_assume;./pytest_assume" --add-dat a "pytest_html;./pytest_html" main.py

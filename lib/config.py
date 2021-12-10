@@ -9,6 +9,7 @@ import os
 from enum import Enum
 import logging
 
+
 path = os.path.dirname(__file__)
 LOG_LEVEL = logging.INFO
 datetime_format = '%Y%m%d%H%M%S'
@@ -16,6 +17,7 @@ seevt_progdata_dir = r'C:\ProgramData\Qualcomm\Qualcomm_SEEVT'
 seevt_protos_dir = os.path.join(seevt_progdata_dir, 'Protos')
 proto_config_file = os.path.join(seevt_progdata_dir, 'Protos.config')
 platform_code = {'hdk8250': 'kona', 'hdk8350': 'lahaina'}
+seevt_exe = r'C:\Program Files\Qualcomm\Qualcomm_SEEVT\Qualcomm_SEEVT.exe'
 
 if LOG_LEVEL > logging.DEBUG:
     ssc_drva_stdout = False
@@ -90,6 +92,7 @@ odr_to_interval = {
 res_values = {
     Sensor.acc.value: {0: '2g', 1: '4g', 2: '8g', 3: '16g'},
     Sensor.gyr.value: {1: '250dps', 2: '500dps', 3: '1000dps', 4: '2000dps'},
+    Sensor.mag.value: {1: 'res_1', 2: 'res_1', 3: 'res_3', 4: 'res_4'},
 }
 
 
@@ -118,7 +121,7 @@ class MagRes(Enum):
 res_idx_dict = {
     Sensor.acc.value: AccRes,
     Sensor.gyr.value: GyrRes,
-    Sensor.mag.value: AccRes,
+    Sensor.mag.value: MagRes,
 }
 
 

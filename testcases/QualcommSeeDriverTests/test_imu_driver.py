@@ -15,7 +15,7 @@ from lib.data_process import std_sensor_event_log
 # from lib.sensor_file.sensor_file import FacCalBias
 from lib.utils import *
 
-productname = 'bmi3x0'
+# productname = 'bmi3x0'
 
 
 def sscdrva_ids(param):
@@ -44,9 +44,7 @@ def match_summary_text(diag_service, re_pattern, data_queue='data'):
 # @pytest.mark.skip
 class TestFactoryTest(object):
     # @pytest.mark.skip
-    def test_factory_test(
-        self, collect_sscdrva_result
-    ):
+    def test_factory_test(self, collect_sscdrva_result):
         fac_test = collect_sscdrva_result['params_set'][0]["factory_test"]
         re_pattern = rf'Test level {fac_test}: PASS'
         for diag_packets in collect_sscdrva_result['diag_packets_list']:
@@ -67,9 +65,9 @@ class TestFactoryTest(object):
 
 # @pytest.mark.skip
 class TestDataStream(object):
-    def test_data_stream(self, collect_sscdrva_result, qseevt, sensor_info_txt):
+    def test_data_stream(self, collect_sscdrva_result, qseevt_open, sensor_info_txt):
         hdf_file = collect_sscdrva_result['hdf']
-        csv_logs = qseevt.parse_hdf_to_csv(hdf_file, sensor_info_txt)
+        csv_logs = qseevt_open.parse_hdf_to_csv(hdf_file, sensor_info_txt)
         for csv_log in csv_logs:
             log_obj = std_sensor_event_log.SeeDrvLog(csv_log, skip_data=1)
             sensor_name = log_obj.sensor
@@ -90,10 +88,10 @@ class TestDataStream(object):
 class TestInternalConcurrency:
     # @pytest.mark.skip
     def test_internal_stream_concurrency(
-        self, collect_sscdrva_result, qseevt, sensor_info_txt
+        self, collect_sscdrva_result, qseevt_open, sensor_info_txt
     ):
         hdf_file = collect_sscdrva_result['hdf']
-        csv_logs = qseevt.parse_hdf_to_csv(hdf_file, sensor_info_txt)
+        csv_logs = qseevt_open.parse_hdf_to_csv(hdf_file, sensor_info_txt)
 
         for csv_log in csv_logs:
             log_obj = std_sensor_event_log.SeeDrvLog(csv_log, skip_data=1)
@@ -112,10 +110,10 @@ class TestInternalConcurrency:
 
     # @pytest.mark.skip
     def test_internal_stream_factory_concurrency(
-        self, collect_sscdrva_result, qseevt, sensor_info_txt
+        self, collect_sscdrva_result, qseevt_open, sensor_info_txt
     ):
         hdf_file = collect_sscdrva_result['hdf']
-        csv_logs = qseevt.parse_hdf_to_csv(hdf_file, sensor_info_txt)
+        csv_logs = qseevt_open.parse_hdf_to_csv(hdf_file, sensor_info_txt)
         fac_test = collect_sscdrva_result['params_set'][1]["factory_test"]
         re_pattern = rf'Test level {fac_test}: PASS'
         for diag_packets in collect_sscdrva_result['diag_packets_list']:
@@ -151,10 +149,10 @@ class TestInternalConcurrency:
 class TestExternalConcurrency:
     # @pytest.mark.skip
     def test_external_concurrency(
-        self, collect_sscdrva_result, qseevt, sensor_info_txt
+        self, collect_sscdrva_result, qseevt_open, sensor_info_txt
     ):
         hdf_file = collect_sscdrva_result['hdf']
-        csv_logs = qseevt.parse_hdf_to_csv(hdf_file, sensor_info_txt)
+        csv_logs = qseevt_open.parse_hdf_to_csv(hdf_file, sensor_info_txt)
         for csv_log in csv_logs:
             log_obj = std_sensor_event_log.SeeDrvLog(csv_log, skip_data=1)
             sensor_name = log_obj.sensor
@@ -173,11 +171,17 @@ class TestExternalConcurrency:
 
 # @pytest.mark.skip
 @pytest.mark.usefixtures('reset_origin_registry')
-@pytest.mark.usefixtures('change_registry_res_value')
+# @pytest.mark.usefixtures('change_registry_res_value')
+# @pytest.mark.parametrize('change_registry_res_value', [
+#     {'accel': 0, 'gyro': 1},
+#     {'accel': 1, 'gyro': 2},
+#     {'accel': 2, 'gyro': 3},
+#     {'accel': 3, 'gyro': 4},
+# ], indirect=True)
 class TestDynaRange:
     # @pytest.mark.usefixtures('change_registry_res_value')
     def test_factory_test(
-        self, collect_sscdrva_result,
+        self, collect_sscdrva_result, change_registry_res_value
     ):
         fac_test = collect_sscdrva_result['params_set'][0]["factory_test"]
         re_pattern = rf'Test level {fac_test}: PASS'
@@ -197,9 +201,9 @@ class TestDynaRange:
                 ), f"bias values [x, y, z]: {prev_biasvals} is not updated after calibration"
 
     # @pytest.mark.usefixtures('change_registry_res_value')
-    def test_data_stream(self, collect_sscdrva_result, qseevt, sensor_info_txt):
+    def test_data_stream(self, collect_sscdrva_result, qseevt_open, sensor_info_txt, change_registry_res_value):
         hdf_file = collect_sscdrva_result['hdf']
-        csv_logs = qseevt.parse_hdf_to_csv(hdf_file, sensor_info_txt)
+        csv_logs = qseevt_open.parse_hdf_to_csv(hdf_file, sensor_info_txt)
         for csv_log in csv_logs:
             log_obj = std_sensor_event_log.SeeDrvLog(csv_log, skip_data=1)
             sensor_name = log_obj.sensor

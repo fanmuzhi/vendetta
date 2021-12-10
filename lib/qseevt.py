@@ -26,7 +26,6 @@ import ctypes, sys
 from lib.utils import *
 
 # logger = logging.getLogger(__name__)
-seevt_exe = r'C:\Program Files\Qualcomm\Qualcomm_SEEVT\Qualcomm_SEEVT.exe'
 
 qseevt_luanch_window_name = "Qualcomm Sensor Execution Environment Validation Tool"
 btn_run_analysis_on_existing_log_file = "Run Analysis on Existing Log File"
@@ -318,7 +317,7 @@ if __name__ == "__main__":
     if is_admin():
         print(is_admin())
         # analyze_hdf_file(hdf, seevt_exe)
-        pq = Qseevt(seevt_exe)
+        pq = Qseevt(cfg.seevt_exe)
         pq.run()
 
         pq.enter_log_analysis_window()
