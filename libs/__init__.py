@@ -3,7 +3,7 @@
 """
 # Description:
 """
-__filename__ = "lib"
+__filename__ = "libs"
 __version__ = "init"
 __author__ = "@henry.fan"
 
@@ -11,12 +11,12 @@ from . import data_process
 from . import qseevt
 
 __all__ = [
-    'adb',
+    # 'adb',
     'data_process',
-    'quts',
+    # 'quts',
     'qseevt',
-    'sensor_file',
-    'ssc_drva',
-    'utils',
-    'config',
+    # 'sensor_file',
+    # 'ssc_drva',
+    # 'utils',
+    # 'config',
 ]

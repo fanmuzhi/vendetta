@@ -6,11 +6,12 @@
 __filename__ = "try"
 __version__ = "init"
 __author__ = "@henry.fan"
-
+import os
 import itertools
 from pprint import pp
-from lib import config as cfg
+from libs import config as cfg
 
+print(os.path.dirname(__file__))
 n_hw = 1
 hwid = list(range(n_hw))
 sensor_list = ['accel', 'gyro']

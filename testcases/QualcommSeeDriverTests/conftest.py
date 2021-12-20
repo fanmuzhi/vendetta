@@ -13,19 +13,14 @@ import xml.dom.minidom
 import csv
 import json
 
-from lib.ssc_drva.ssc_drva import SscDrvaTest
-from lib.quts.quts import *
-from lib.adb.adb import ADB
-from lib import qseevt
-import lib.utils as utils
-import lib.config as cfg
+from libs.ssc_drva.ssc_drva import SscDrvaTest
+from libs.quts.quts import *
+from libs.adb.adb import ADB
+from libs import qseevt
+import libs.utils as utils
+import libs.config as cfg
 
-default_log_dir = os.path.join(os.path.dirname(__file__), 'logs')
-default_report_dir = os.path.join(os.path.dirname(__file__), 'reports')
 fdmc = os.path.join(os.path.dirname(__file__), 'mydmc.dmc')
-# log_path = r"C:\temp\testlog"
-# platform = 'hdk8350'
-# productname = 'bmi3x0'
 n_hw = 1
 hwid = list(range(n_hw))
 streamtest_odr_list = [-2, 50, 100, 200, -1, -3.0]
@@ -35,9 +30,6 @@ sensor_streamtest_dur = 30
 sensor_factest_dur = 5
 ssc_drva_delay = 2
 null_params = [None]
-# acc_res_list = [0, 1, 2, 3]
-# gyr_res_list = [1, 2, 3, 4]
-# mag_res_list = [1, 2, 3, 4]
 
 res_squence = [
     {cfg.Sensor.acc.value: 0, cfg.Sensor.gyr.value: 1, cfg.Sensor.mag.value: 1},
@@ -81,15 +73,15 @@ def pytest_addoption(parser):
     parser.addoption(
         "--log_dir",
         action="store",
-        default=default_log_dir,
+        # default=default_log_dir,
         help="Customize an location to save test log files",
     )
-    parser.addoption(
-        "--report_dir",
-        action="store",
-        default=default_report_dir,
-        help="Customize an location to save test report logs",
-    )
+    # parser.addoption(
+    #     "--report_dir",
+    #     action="store",
+    #     default=default_report_dir,
+    #     help="Customize an location to save test report logs",
+    # )
 
 
 def resvalue_id_str(registry_dict):
@@ -300,6 +292,7 @@ def pytest_generate_tests(metafunc):
             'change_registry_res_value',
             ranges,
             ids=[resvalue_id_str(r) for r in ranges],
+            scope='class',
             indirect=True,
             # scope='class'
         )
@@ -326,8 +319,9 @@ def collect_sscdrva_result(
         'hdf': None,
         'drv_log': None,
     }
-    time_str = f'{utils.datetime.now().strftime(utils.datetime_format)}'
-    file_name = f"{time_str}_{request.cls.__name__}_{request.node.name}"
+    # time_str = f'{utils.datetime.now().strftime(utils.datetime_format)}'
+    file_name = f"{request.cls.__name__}-{request.node.name}"
+    # print(f'\nfilename: {file_name}')
     # file_name = rf"{log_file_name(request.param)}"
     hdflogfile = os.path.join(log_path, f'{file_name}.hdf')
     drvlogfile = os.path.join(log_path, f'{file_name}.csv')
@@ -366,7 +360,7 @@ def collect_sscdrva_result(
         diag_protocol = get_diag_protocal_handle(quts_dev_mgr, device)
         quts_dev_mgr.saveLogFilesWithFilenames({diag_protocol: hdflogfile})
         result.update({'hdf': hdflogfile})
-    result.update({'drv_log': drvlogfile})
+    result['drv_log'] = drvlogfile
 
     return result
 
@@ -401,9 +395,11 @@ def isadmin():
 
 
 @pytest.fixture(scope='package', autouse=True)
-def mk_dirs():
-    os.makedirs(default_log_dir, exist_ok=True)
-    os.makedirs(default_report_dir, exist_ok=True)
+def mk_dirs(request):
+    log_path = request.config.getoption("--log_dir")
+
+    os.makedirs(log_path, exist_ok=True)
+    # os.makedirs(default_report_dir, exist_ok=True)
 
 
 # adb fixtures
@@ -424,19 +420,6 @@ def ssc_drva(adb):
     ssc_drva = SscDrvaTest(adb)
     yield ssc_drva
     del ssc_drva
-
-
-# quts fixtures
-@pytest.fixture(scope='session', autouse=True)
-def add_quts_sys_path():
-    if sys.platform.startswith("linux"):
-        sys.path.append('/opt/qcom/QUTS/Support/python')
-    elif sys.platform.startswith("win"):
-        sys.path.append('C:\Program Files (x86)\Qualcomm\QUTS\Support\python')
-    elif sys.platform.startswith("darwin"):
-        sys.path.append('/Applications/Qualcomm/QUTS/QUTS.app/Contents/Support/python')
-    else:
-        pytest.exit("unrecognized system platform")
 
 
 @pytest.fixture(scope="package")
@@ -653,7 +636,7 @@ def reset_origin_registry(adb, sensor_registry, request):
     print('origin registry reset')
 
 
-@pytest.fixture(scope='class')
+@pytest.fixture()
 def change_registry_res_value(adb, sensor_registry, request):
     """
     [
@@ -666,7 +649,9 @@ def change_registry_res_value(adb, sensor_registry, request):
     productname = request.config.getoption("--product")
     new_regi = sensor_registry.copy()
     for sensor, res_val in request.param.items():
-        new_regi[f'{productname}_{hw_id}'][f'.{sensor}']['.config']['res_idx']['data'] = str(res_val)
+        new_regi[f'{productname}_{hw_id}'][f'.{sensor}']['.config']['res_idx'][
+            'data'
+        ] = str(res_val)
     reg_file_name = rf'./{cfg.platform_code["hdk8350"]}_hdk_{productname}_{hw_id}.json'
     with open(reg_file_name, 'w') as f:
         json.dump(new_regi, f)

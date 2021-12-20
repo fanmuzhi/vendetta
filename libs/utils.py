@@ -13,12 +13,12 @@ from datetime import datetime
 import ctypes
 import json
 import time
-from lib.ssc_drva.ssc_drva import SscDrvaParams
-from lib.adb.adb import ADB
-from lib import config as cfg
-from lib.quts.quts import logging_diag_hdf
+from libs.ssc_drva.ssc_drva import SscDrvaParams
+from libs.adb.adb import ADB
+from libs import config as cfg
+from libs.quts.quts import logging_diag_hdf
 
-datetime_format = '%Y-%m-%d_%H-%M-%S'
+datetime_format = '%Y%m%d_%H%M%S'
 
 
 def is_admin():

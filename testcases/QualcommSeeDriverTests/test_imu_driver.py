@@ -8,14 +8,14 @@ __version__ = "init"
 __author__ = "@henry.fan"
 
 # import os
+import sys
+
 # import re
 import pytest
-from lib.data_process import std_sensor_event_log
+from libs.data_process import std_sensor_event_log
 
-# from lib.sensor_file.sensor_file import FacCalBias
-from lib.utils import *
-
-# productname = 'bmi3x0'
+# from libs.sensor_file.sensor_file import FacCalBias
+from libs.utils import *
 
 
 def sscdrva_ids(param):
@@ -61,6 +61,7 @@ class TestFactoryTest(object):
                 assert [pre + 1 for pre in prev_biasvals] == list(
                     post_biasvals
                 ), f"bias values [x, y, z]: {prev_biasvals} is not updated after calibration"
+        # print(collect_sscdrva_result)
 
 
 # @pytest.mark.skip
@@ -180,9 +181,7 @@ class TestExternalConcurrency:
 # ], indirect=True)
 class TestDynaRange:
     # @pytest.mark.usefixtures('change_registry_res_value')
-    def test_factory_test(
-        self, collect_sscdrva_result, change_registry_res_value
-    ):
+    def test_factory_test(self, collect_sscdrva_result, change_registry_res_value):
         fac_test = collect_sscdrva_result['params_set'][0]["factory_test"]
         re_pattern = rf'Test level {fac_test}: PASS'
         for diag_packets in collect_sscdrva_result['diag_packets_list']:
@@ -201,7 +200,13 @@ class TestDynaRange:
                 ), f"bias values [x, y, z]: {prev_biasvals} is not updated after calibration"
 
     # @pytest.mark.usefixtures('change_registry_res_value')
-    def test_data_stream(self, collect_sscdrva_result, qseevt_open, sensor_info_txt, change_registry_res_value):
+    def test_data_stream(
+        self,
+        collect_sscdrva_result,
+        qseevt_open,
+        sensor_info_txt,
+        change_registry_res_value,
+    ):
         hdf_file = collect_sscdrva_result['hdf']
         csv_logs = qseevt_open.parse_hdf_to_csv(hdf_file, sensor_info_txt)
         for csv_log in csv_logs:
@@ -218,3 +223,44 @@ class TestDynaRange:
                     log_obj.check_data_range(col_name, axis)
                 with pytest.assume:
                     log_obj.check_data_stddev(col_name, axis)
+
+
+# def main():
+#     pytest.main(
+#         args=argv,
+#     )
+
+
+if __name__ == '__main__':
+    product = ''
+    defualt_testpath = r'testcases\QualcommSeeDriverTests\test_imu_driver.py'
+    default_args = [
+        # '--lf',
+        '-v',
+        '--capture=sys',
+        '--tb=native',
+        # f'--html={utils.datetime_str()}_{product}_report.html',
+        '-p',
+        'no:faulthandler',
+        '-W ignore::DeprecationWarning',
+    ]
+
+    argv = sys.argv[1:]
+
+    # if not argv[0].startswith(defualt_testpath):
+    #     argv = [defualt_testpath] + argv
+    # if '--product' not in argv or '--product' == argv[-1]:
+    #     print("argument --product not assigned")
+    #     sys.exit(1)
+    # elif not utils.get_sensorlist(argv[argv.index('--product') + 1]):
+    #     print('invalid product name')
+    #     sys.exit(1)
+    # else:
+    #     fhtmlreport = f'{utils.datetime_str()}_{product}_report.html'
+    #     argv.append(f'--html={fhtmlreport}')
+    #
+    # for arg in default_args:
+    #     if arg not in argv:
+    #         argv.append(arg)
+    # print(f'pytest {" ".join(argv)}')
+    pytest.main(args=argv,)

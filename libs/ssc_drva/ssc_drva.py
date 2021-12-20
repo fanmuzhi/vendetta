@@ -10,7 +10,7 @@ __author__ = "@henry.fan"
 import logging
 import sys
 from subprocess import PIPE, TimeoutExpired
-from lib.adb.adb import ADB
+from libs.adb.adb import ADB
 
 # from log import logger
 

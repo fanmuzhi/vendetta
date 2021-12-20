@@ -9,8 +9,8 @@ __author__ = "@henry.fan"
 
 import os
 import json
-from lib.adb.adb import ADB
-from lib import config as cfg
+from libs.adb.adb import ADB
+from libs import config as cfg
 
 
 class ConfigJson:
