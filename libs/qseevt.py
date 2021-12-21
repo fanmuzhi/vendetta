@@ -303,7 +303,7 @@ def analyze_hdf_file(hdf_file, seevt_exe, out=False):
 
         # time.sleep(1)
     logging.info("Close QaatCtrl window")
-    p_qawa.close(log_analysis_window_name)
+    p_qawa.close()
     return ret_val
 
 
