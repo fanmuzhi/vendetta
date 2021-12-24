@@ -37,6 +37,7 @@ default_args = [
 ]
 
 if __name__ == '__main__':
+    app_prior_init()
     argv = sys.argv[1:]
 
     if '--product' not in argv or '--product' == argv[-1]:
