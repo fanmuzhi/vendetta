@@ -248,8 +248,8 @@ class SeeDrvLog:
         h_limit = data_bases[self.sensor][axis] + data_offsets[self.sensor][axis]
         data_min, data_max = self.stats[col_name]['min'], self.stats[col_name]['max']
         assert (
-            l_limit <= data_min < data_max <= h_limit
-        ), f"{col_name} [{data_min}, {data_max}] out of range [{l_limit}, {h_limit}] in {self.csv_file}"
+            l_limit <= data_min <= data_max <= h_limit
+        ), f"{col_name} data [{data_min}, {data_max}] out of range [{l_limit}, {h_limit}] in {self.csv_file}"
 
     def check_data_stddev(self, col_name, axis):
         stddev = self.stats[col_name]['std']
@@ -257,8 +257,8 @@ class SeeDrvLog:
         # h_limit = 0
         h_limit = stddev_limits[self.sensor][axis]
         assert (
-            l_limit <= stddev <= h_limit
-        ), f"{self.sensor} {axis} axis std_dev {stddev} exceeds limit {h_limit} in {self.sensor}"
+            l_limit < stddev < h_limit
+        ), f"{col_name} standard deviation {stddev} exceeds limit [{l_limit}, {h_limit}] in {self.csv_file}"
 
 
 if __name__ == '__main__':

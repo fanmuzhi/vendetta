@@ -30,6 +30,7 @@ sensor_streamtest_dur = 30
 sensor_factest_dur = 5
 ssc_drva_delay = 2
 null_params = [None]
+test_result_root_dir = r'c:\SeeTests'
 
 res_squence = [
     {cfg.Sensor.acc.value: 0, cfg.Sensor.gyr.value: 1, cfg.Sensor.mag.value: 1},
@@ -70,12 +71,12 @@ def pytest_addoption(parser):
         default="hdk8350",
         help="qualcomm dev board, default=hdk8350",
     )
-    parser.addoption(
-        "--log_dir",
-        action="store",
-        # default=default_log_dir,
-        help="Customize an location to save test log files",
-    )
+    # parser.addoption(
+    #     "--log_dir",
+    #     action="store",
+    #     # default=default_log_dir,
+    #     help="Customize an location to save test log files",
+    # )
     # parser.addoption(
     #     "--report_dir",
     #     action="store",
@@ -305,10 +306,12 @@ def pytest_generate_tests(metafunc):
 
 @pytest.fixture()
 def collect_sscdrva_result(
-    ssc_drva, quts_dev_mgr, quts_diag_service, data_queue, request,
+    ssc_drva, quts_dev_mgr, quts_diag_service, data_queue, request, log_path
 ):
+    # log_path = request.config.getoption("--log_dir")
     productname = request.config.getoption("--product")
-    log_path = request.config.getoption("--log_dir")
+    # test_info = f'{product}_{utils.datetime_str()}'
+    # log_path = os.path.join(test_result_root_dir, test_info, 'log')
     calib_sensor = None
     diag_packets_list = []
     bias_result = []
@@ -395,10 +398,13 @@ def isadmin():
 
 
 @pytest.fixture(scope='package', autouse=True)
-def mk_dirs(request):
-    log_path = request.config.getoption("--log_dir")
-
+def log_path(request):
+    # log_path = request.config.getoption("--log_dir")
+    product = request.config.getoption("--product")
+    test_info = f'{product}_{utils.datetime_str()}'
+    log_path = os.path.join(test_result_root_dir, test_info, 'log')
     os.makedirs(log_path, exist_ok=True)
+    yield log_path
     # os.makedirs(default_report_dir, exist_ok=True)
 
 
@@ -578,17 +584,17 @@ def check_protos(request):
         #     'No Protos imported for QSEEVT tool, please import .protos in QSEEVT'
         # )
         return False
-    else:
-        tree = xml.dom.minidom.parse(cfg.proto_config_file)
-        configuration = tree.documentElement
-        current_protos = configuration.getElementsByTagName("CurrentProtos")
-        if not current_protos or current_protos[0].firstChild.data != os.path.join(
-            cfg.seevt_protos_dir, f'protos_{platform}'
-        ):
-            # pytest.exit(
-            #     'No Protos imported for QSEEVT tool, please import .protos in QSEEVT'
-            # )
-            return False
+    # else:
+    #     tree = xml.dom.minidom.parse(cfg.proto_config_file)
+    #     configuration = tree.documentElement
+    #     current_protos = configuration.getElementsByTagName("CurrentProtos")
+    #     if not current_protos or current_protos[0].firstChild.data != os.path.join(
+    #         cfg.seevt_protos_dir, f'protos_{platform}'
+    #     ):
+    #         # pytest.exit(
+    #         #     'No Protos imported for QSEEVT tool, please import .protos in QSEEVT'
+    #         # )
+    #         return False
     return True
 
 

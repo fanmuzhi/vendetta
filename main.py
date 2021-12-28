@@ -68,7 +68,7 @@ if __name__ == '__main__':
             f_html = f'FAILEDCASES-RETEST-{f_html}'
         argv.append(f'--html={os.path.join(test_folder, f_html)}')
         argv.append('--self-contained-html')
-        argv.append(f'--log_dir={log_dir}')
+        # argv.append(f'--log_dir={log_dir}')
 
     # print(f'pytest {" ".join(argv)}')
     pytest.main(
