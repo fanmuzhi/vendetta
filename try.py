@@ -30,7 +30,6 @@ used_drva_keys = [
     'hw_id',
     'delay',
 ]
-
 #
 # streamtest_params_sensor = list(itertools.product(sensor_list, [None]))
 # # print("single sensor test sensor list:")

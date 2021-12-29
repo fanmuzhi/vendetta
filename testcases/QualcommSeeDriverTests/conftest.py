@@ -21,8 +21,8 @@ import libs.utils as utils
 import libs.config as cfg
 
 fdmc = os.path.join(os.path.dirname(__file__), 'mydmc.dmc')
-n_hw = 1
-hwid = list(range(n_hw))
+# n_hw = 1
+# hwid = list(range(n_hw))
 streamtest_odr_list = [-2, 50, 100, 200, -1, -3.0]
 # streamtest_odr_list = [-2, 50]
 factest_type_list = [1, 2, 3]
@@ -70,6 +70,12 @@ def pytest_addoption(parser):
         action="store",
         default="hdk8350",
         help="qualcomm dev board, default=hdk8350",
+    )
+    parser.addoption(
+        "--nhw",
+        action="store",
+        default=1,
+        help="numbers of sensor hardware connected, default: 1",
     )
     # parser.addoption(
     #     "--log_dir",
@@ -163,6 +169,8 @@ def pytest_generate_tests(metafunc):
     # fixturename = ''
     params_list = []
     productname = getattr(metafunc.config.option, 'product', "")
+    nhw = int(getattr(metafunc.config.option, 'nhw', 1))
+    hw_ids = list(range(nhw))
     sensor_list = utils.get_sensorlist(productname)
 
     if "test_factory_test" == metafunc.definition.name:
@@ -171,7 +179,7 @@ def pytest_generate_tests(metafunc):
         params_factest_type = list(itertools.product(factest_type_list, [None]))
         params_odr = null_params
         params_dur = list(itertools.product([sensor_factest_dur], [None]))
-        params_hwid = list(itertools.product(hwid, [None]))
+        params_hwid = list(itertools.product(hw_ids, [None]))
         params_delay = null_params
 
         params_list = list(
@@ -200,7 +208,7 @@ def pytest_generate_tests(metafunc):
         # if "dynarange" in metafunc.fixturenames:
         #     params_sensor = list(itertools.product(sensor_list, [None]))
         params_factest_type = null_params
-        params_hwid = list(itertools.product(hwid, [None]))
+        params_hwid = list(itertools.product(hw_ids, [None]))
         params_delay = null_params
         params_list = list(
             itertools.product(
@@ -218,7 +226,7 @@ def pytest_generate_tests(metafunc):
         params_dur = [(30, 30)]
         params_odr = [(-1, -2), (-3.1, -3.2)]
         params_factest_type = null_params
-        params_hwid = [(0, 0)]
+        params_hwid = list(zip(*[hw_ids] * 2))
         params_delays = list(itertools.product([None], [ssc_drva_delay]))
         params_list = list(
             itertools.product(
@@ -236,7 +244,7 @@ def pytest_generate_tests(metafunc):
         params_odr = list(itertools.product([-1], [None]))
         params_factest_type = list(itertools.product([None], [1, 2]))
         params_dur = [(30, 5)]
-        params_hwid = [(0, 0)]
+        params_hwid = list(zip(*[hw_ids] * 2))
         params_delays = list(itertools.product([None], [ssc_drva_delay]))
         params_list = list(
             itertools.product(
@@ -256,7 +264,7 @@ def pytest_generate_tests(metafunc):
         params_dur = null_params
         params_odr = [(-1, -2), (-1, -3.1), (-2, -3.2), (-3.0, -3.1)]
         params_factest_type = null_params
-        params_hwid = [(0, 0)]
+        params_hwid = list(zip(*[hw_ids] * 2))
         params_delays = list(itertools.product([None], [ssc_drva_delay]))
         params_list = []
         for odr in params_odr:
@@ -277,6 +285,21 @@ def pytest_generate_tests(metafunc):
                     )
                 )
             )
+
+    if "test_dual_hw_stream" == metafunc.definition.name:
+        if int(getattr(metafunc.config.option, 'nhw', 1)) < 2:
+            pytest.skip("skip")
+        # else:
+        params_list = [
+            (('accel', 'accel'), (60, 60), (-1, -2), None, (0, 1), None),
+            (('gyro', 'gyro'), (60, 60), (-1, -2), None, (0, 1), None),
+            (('accel', 'accel'), (10, 10), (-3.0, -3.1), None, (0, 1), (None, 2)),
+            (('gyro', 'gyro'), (10, 10), (-3.0, -3.1), None, (0, 1), (None, 2)),
+            (('accel', 'gyro'), (10, 10), (-3.2, -3.2), None, (0, 1), (None, 2)),
+            (('accel', 'gyro'), (30, 30), (-2, -1), None, (0, 1), (None, 2)),
+            (('gyro', 'accel'), (30, 30), (-2, -1), None, (0, 1), (None, 2)),
+        ]
+
     params_sets_list = [
         setup_param_sets(dict(zip(using_ssc_drva_keys, param))) for param in params_list
     ]
@@ -613,32 +636,37 @@ def sensor_info_txt(adb):
 
 @pytest.fixture(scope='package', autouse=True)
 def sensor_registry(adb, request):
-    platform = request.config.getoption("--platform")
-
     productname = request.config.getoption("--product")
-    hw_id = 0
-    text = adb.adb_cat(
-        rf'/vendor/etc/sensors/config/{cfg.platform_code[platform]}_hdk_{productname}_{hw_id}.json'
-    )
-    registry_dict = json.loads(text)
-    if not registry_dict:
-        pytest.exit('cannot load the registry file from the system')
-    yield registry_dict
-    del registry_dict
+    platform = request.config.getoption("--platform")
+    nhw = int(request.config.getoption("--nhw"))
+    registries = {}
+    for ihw in range(nhw):
+
+        text = adb.adb_cat(
+            rf'/vendor/etc/sensors/config/{cfg.platform_code[platform]}_hdk_{productname}_{ihw}.json'
+        )
+        ihw_reg = json.loads(text)
+        if not ihw_reg:
+            pytest.exit('cannot load the registry file from the system')
+        registries.update({ihw: ihw_reg})
+    yield registries
+    del registries, ihw_reg
 
 
 @pytest.fixture(scope='package')
 def reset_origin_registry(adb, sensor_registry, request):
+    yield
     platform = request.config.getoption("--platform")
     productname = request.config.getoption("--product")
-    yield
-    hw_id = 0
-    new_regi = sensor_registry.copy()
-    reg_file_name = rf'./{cfg.platform_code[platform]}_hdk_{productname}_{hw_id}.json'
-    with open(reg_file_name, 'w') as f:
-        json.dump(new_regi, f)
-    adb.update_registry_file(reg_file_name)
-    os.remove(reg_file_name)
+    for ihw, registry in sensor_registry.items():
+        reg_file_name = rf'./{cfg.platform_code[platform]}_hdk_{productname}_{ihw}.json'
+        with open(reg_file_name, 'w') as f:
+            json.dump(registry, f)
+        adb.push_registry_file(reg_file_name)
+        os.remove(reg_file_name)
+    adb.adb_sync()
+    adb.adb_reboot()
+    adb.adb_root()
     print('origin registry reset')
 
 
@@ -651,15 +679,20 @@ def change_registry_res_value(adb, sensor_registry, request):
     ]
     :return:
     """
-    hw_id = 0
+    platform = request.config.getoption("--platform")
     productname = request.config.getoption("--product")
-    new_regi = sensor_registry.copy()
-    for sensor, res_val in request.param.items():
-        new_regi[f'{productname}_{hw_id}'][f'.{sensor}']['.config']['res_idx'][
-            'data'
-        ] = str(res_val)
-    reg_file_name = rf'./{cfg.platform_code["hdk8350"]}_hdk_{productname}_{hw_id}.json'
-    with open(reg_file_name, 'w') as f:
-        json.dump(new_regi, f)
-    adb.update_registry_file(reg_file_name)
-    os.remove(reg_file_name)
+    for ihw, registry in sensor_registry.items():
+        new_regi = registry.copy()
+        for sensor, res_val in request.param.items():
+            new_regi[f'{productname}_{ihw}'][f'.{sensor}']['.config']['res_idx'][
+                'data'
+            ] = str(res_val)
+        reg_file_name = rf'./{cfg.platform_code[platform]}_hdk_{productname}_{ihw}.json'
+        with open(reg_file_name, 'w') as f:
+            json.dump(new_regi, f)
+        adb.push_registry_file(reg_file_name)
+        os.remove(reg_file_name)
+    adb.adb_sync()
+    adb.adb_reboot()
+    adb.adb_root()
+    yield

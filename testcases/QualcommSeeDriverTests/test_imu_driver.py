@@ -170,18 +170,38 @@ class TestExternalConcurrency:
                     log_obj.check_data_stddev(col_name, axis)
 
 
+class TestDualHardwares:
+
+    def test_dual_hw_stream(
+            self,
+            collect_sscdrva_result,
+            qseevt_open,
+            sensor_info_txt,
+    ):
+        hdf_file = collect_sscdrva_result['hdf']
+        csv_logs = qseevt_open.parse_hdf_to_csv(hdf_file, sensor_info_txt)
+        for csv_log in csv_logs:
+            log_obj = std_sensor_event_log.SeeDrvLog(csv_log, skip_data=1)
+            sensor_name = log_obj.sensor
+            if not log_obj.odr or log_obj.dest_sensor != 'da_test':
+                continue
+
+            with pytest.assume:
+                log_obj.check_odr()
+            for axis in std_sensor_event_log.axises:
+                col_name = f'{sensor_name.capitalize()} {axis.upper()} ({log_obj.unit})'
+                with pytest.assume:
+                    log_obj.check_data_range(col_name, axis)
+                with pytest.assume:
+                    log_obj.check_data_stddev(col_name, axis)
+
+
 # @pytest.mark.skip
 @pytest.mark.usefixtures('reset_origin_registry')
-# @pytest.mark.usefixtures('change_registry_res_value')
-# @pytest.mark.parametrize('change_registry_res_value', [
-#     {'accel': 0, 'gyro': 1},
-#     {'accel': 1, 'gyro': 2},
-#     {'accel': 2, 'gyro': 3},
-#     {'accel': 3, 'gyro': 4},
-# ], indirect=True)
+@pytest.mark.usefixtures('change_registry_res_value')
 class TestDynaRange:
     # @pytest.mark.usefixtures('change_registry_res_value')
-    def test_factory_test(self, collect_sscdrva_result, change_registry_res_value):
+    def test_factory_test(self, collect_sscdrva_result):
         fac_test = collect_sscdrva_result['params_set'][0]["factory_test"]
         re_pattern = rf'Test level {fac_test}: PASS'
         for diag_packets in collect_sscdrva_result['diag_packets_list']:
@@ -205,7 +225,6 @@ class TestDynaRange:
         collect_sscdrva_result,
         qseevt_open,
         sensor_info_txt,
-        change_registry_res_value,
     ):
         hdf_file = collect_sscdrva_result['hdf']
         csv_logs = qseevt_open.parse_hdf_to_csv(hdf_file, sensor_info_txt)

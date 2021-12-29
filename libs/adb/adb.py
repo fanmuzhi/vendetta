@@ -120,6 +120,7 @@ class ADB:
     def adb_sync(self):
         cmd = ['sync']
         ret = self.adb_shell_run(cmd, check=True, timeout=60)
+        self.adb_wait_for_device()
         return ret
 
     def adb_chmod(self, value, target):
@@ -130,6 +131,7 @@ class ADB:
     def adb_rm_all_files_in(self, dir):
         cmd = ['rm', '-rf', os.path.join(dir, "*")]
         ret = self.adb_shell_run(cmd, check=True, timeout=60)
+        self.adb_wait_for_device()
         return ret
 
     def adb_cat(self, file):
@@ -159,15 +161,15 @@ class ADB:
             int(json_buffer[root]['z']['ver']),
         )
 
-    def update_registry_file(self, new_registry_file):
+    def push_registry_file(self, new_registry_file):
         self.adb_root()
         self.adb_remount()
         self.adb_rm_all_files_in(r'/mnt/vendor/persist/sensors/registry/registry/*')
         self.adb_push(new_registry_file, r'/vendor/etc/sensors/config/')
-        self.adb_sync()
-        self.adb_reboot()
-        self.adb_wait_for_device()
-        self.adb_root()
+
+        # self.adb_sync()
+        # self.adb_reboot()
+        # self.adb_root()
 
 
 if __name__ == '__main__':

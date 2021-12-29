@@ -9,3 +9,4 @@ pytest_html/
 pytest_assume/
 build/
 dist/
+testcases/QualcommSeeDriverTests/sensorinfo.txt
