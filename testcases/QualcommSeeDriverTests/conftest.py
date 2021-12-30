@@ -10,6 +10,7 @@ import csv
 import itertools
 import json
 import os
+import re
 
 import pytest
 
@@ -17,14 +18,11 @@ import libs.config as cfg
 import libs.utils as utils
 from libs import qseevt
 from libs.adb.adb import ADB
-from libs.quts.quts import *
+from libs.quts import quts
 from libs.ssc_drva.ssc_drva import SscDrvaTest
 
 fdmc = os.path.join(os.path.dirname(__file__), 'mydmc.dmc')
-# n_hw = 1
-# hwid = list(range(n_hw))
 streamtest_odr_list = [-2, 50, 100, 200, -1, -3.0]
-# streamtest_odr_list = [-2, 50]
 factest_type_list = [1, 2, 3]
 sensor_streamtest_dur = 30
 sensor_factest_dur = 5
@@ -139,8 +137,8 @@ def test_case_id_str(pairs):
             id_word_list.append(cfg.FacTest(pairs['factory_test'][i]).name)
         if pairs['hw_id'] and pairs['hw_id'][i] is not None:
             id_word_list.append(f"hw{pairs['hw_id'][i]}")
-    id = '-'.join(id_word_list)
-    return id
+    id_str = '-'.join(id_word_list)
+    return id_str
 
 
 def match_summary_text(diag_service, re_pattern, data_queue='data'):
@@ -382,8 +380,8 @@ def collect_sscdrva_result(
         post_biasvals = utils.imu_bias_values(productname, calib_sensor)
         bias_result.append(post_biasvals)
     if hdf_logging:
-        device = get_device_handle(quts_dev_mgr)
-        diag_protocol = get_diag_protocal_handle(quts_dev_mgr, device)
+        device = quts.get_device_handle(quts_dev_mgr)
+        diag_protocol = quts.get_diag_protocal_handle(quts_dev_mgr, device)
         quts_dev_mgr.saveLogFilesWithFilenames({diag_protocol: hdflogfile})
         result.update({'hdf': hdflogfile})
     result['drv_log'] = drvlogfile
@@ -453,7 +451,7 @@ def ssc_drva(adb):
 
 @pytest.fixture(scope="package")
 def quts_client():
-    client = QutsClient.QutsClient("BST MEMS Sensor Driver Test")
+    client = quts.quts_client("BST MEMS Sensor Driver Test")
     yield client
     client.stop()
     del client
@@ -461,13 +459,13 @@ def quts_client():
 
 @pytest.fixture(scope='package')
 def quts_set_all_callbacks(quts_client):
-    set_all_callbacks(quts_client)
+    quts.set_all_callbacks(quts_client)
 
 
 @pytest.fixture(scope='function')
 def data_queue(quts_diag_service):
     queuename = 'data'
-    error_code = create_data_queue_for_monitoring(
+    error_code = quts.create_data_queue_for_monitoring(
         quts_diag_service, queue_name=queuename
     )
     if error_code != 0:
@@ -501,7 +499,7 @@ def quts_list_services(quts_dev_mgr):
 
 @pytest.fixture(scope="package", autouse=True)
 def quts_device_handle(quts_dev_mgr):
-    device_handle = get_device_handle(quts_dev_mgr)
+    device_handle = quts.get_device_handle(quts_dev_mgr)
     if not device_handle:
         pytest.exit("No Qualcomm USB Composite Device Found")
     yield device_handle
@@ -511,7 +509,7 @@ def quts_device_handle(quts_dev_mgr):
 @pytest.fixture(scope="package", autouse=True)
 def quts_list_protocals(quts_dev_mgr, quts_device_handle):
     protocol_handle = None
-    if not get_diag_protocal_handle(quts_dev_mgr, quts_device_handle):
+    if not quts.get_diag_protocal_handle(quts_dev_mgr, quts_device_handle):
         pytest.exit("No Qualcomm USB Composite Protocal Found")
     yield protocol_handle
     del protocol_handle
@@ -519,12 +517,7 @@ def quts_list_protocals(quts_dev_mgr, quts_device_handle):
 
 @pytest.fixture(scope="package", autouse=True)
 def quts_device_service(quts_client, quts_device_handle):
-    dev_service = DeviceConfigService.DeviceConfigService.Client(
-        quts_client.createService(
-            DeviceConfigService.constants.DEVICE_CONFIG_SERVICE_NAME,
-            quts_device_handle,
-        )
-    )
+    dev_service = quts.device_service(quts_client, quts_device_handle)
     if not dev_service:
         pytest.exit("No Qualcomm USB Composite Device Found")
     dev_service.initializeService()
@@ -537,11 +530,7 @@ def quts_device_service(quts_client, quts_device_handle):
 
 @pytest.fixture(scope="package")
 def quts_diag_service(quts_client, quts_device_handle):
-    diag_service = DiagService.DiagService.Client(
-        quts_client.createService(
-            DiagService.constants.DIAG_SERVICE_NAME, quts_device_handle
-        )
-    )
+    diag_service = quts.diagservice_client(quts_client, quts_device_handle)
     diag_service.initializeService()
 
     yield diag_service
@@ -574,38 +563,11 @@ def qseevt_open(check_protos):
     del seevt
 
 
-#
-# @pytest.fixture(scope='package')
-# def qseevt_protos_config():
-#     folder_dst = os.path.join(cfg.seevt_protos_dir, 'protos_hdk_8350')
-#     os.makedirs(folder_dst, exist_ok=True)
-#     try:
-#         os.system(f'copy data\protos_hdk_8350 {folder_dst}')
-#         tree = xml.dom.minidom.parse(cfg.proto_config_file)
-#         configuration = tree.documentElement
-#         current_protos = configuration.getElementsByTagName("CurrentProtos")
-#         current_protos[0].firstChild.data = folder_dst
-#         with open(cfg.proto_config_file, 'w', encoding='utf-8') as f:
-#             tree.writexml(f, encoding='utf-8')
-#     except IOError as e:
-#         pytest.exit("Unable to copy file. %s" % e)
-#     except:
-#         pytest.exit("Unexpected error:", sys.exc_info())
-
-
 @pytest.fixture(scope='package')
 def check_protos(request):
-    platform = request.config.getoption("--platform")
-
     if not os.path.exists(cfg.seevt_protos_dir) or not os.listdir(cfg.seevt_protos_dir):
-        # pytest.exit(
-        #     'No Protos imported for QSEEVT tool, please import .protos in QSEEVT'
-        # )
         return False
     if not os.path.exists(r'C:\ProgramData\Qualcomm\Qualcomm_SEEVT\Protos.config'):
-        # pytest.exit(
-        #     'No Protos imported for QSEEVT tool, please import .protos in QSEEVT'
-        # )
         return False
     # else:
     #     tree = xml.dom.minidom.parse(cfg.proto_config_file)

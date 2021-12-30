@@ -7,7 +7,6 @@ __filename__ = "quts"
 __version__ = "init"
 __author__ = "@henry.fan"
 
-import contextlib
 import sys
 
 # The path where QUTS files are installed
@@ -18,9 +17,18 @@ elif sys.platform.startswith("win"):
 elif sys.platform.startswith("darwin"):
     sys.path.append('/Applications/Qualcomm/QUTS/QUTS.app/Contents/Support/python')
 
+import contextlib
+
+import QutsClient
 import Common.ttypes
 
-import DeviceManager.DeviceManager
+import DeviceConfigService.DeviceConfigService
+import DeviceConfigService.constants
+# import DeviceManager.DeviceManager
+import DeviceManager.constants
+import DiagService.DiagService
+import DiagService.constants
+
 
 cur_txt = r'C:\Users\FNH1SGH\Desktop\a.txt'
 log_packet_filter_item = [
@@ -102,7 +110,7 @@ def on_missing_qshrink_hash_file():
     pass
 
 
-def on_logsession_missing_qshrink_hash_File():
+def on_logsession_missing_qshrink_hash_file():
     pass
 
 
@@ -138,6 +146,27 @@ def on_qshrink_state_updated():
     pass
 
 
+def quts_client(name):
+    return QutsClient.QutsClient(name)
+
+
+def device_service(quts_client, quts_device_handle):
+    return DeviceConfigService.DeviceConfigService.Client(
+        quts_client.createService(
+            DeviceConfigService.constants.DEVICE_CONFIG_SERVICE_NAME,
+            quts_device_handle,
+        )
+    )
+
+
+def diagservice_client(quts_client, quts_device_handle):
+    return DiagService.DiagService.Client(
+        quts_client.createService(
+            DiagService.constants.DIAG_SERVICE_NAME, quts_device_handle
+        )
+    )
+
+
 def set_all_callbacks(quts_client):
     quts_client.setOnMessageCallback(on_message)
     quts_client.setOnDeviceConnectedCallback(on_device_connected)
@@ -152,7 +181,7 @@ def set_all_callbacks(quts_client):
     # quts_client.setOnClientCloseRequestCallback()
     quts_client.setOnMissingQShrinkHashFileCallback(on_missing_qshrink_hash_file)
     quts_client.setOnLogSessionMissingQShrinkHashFileCallback(
-        on_logsession_missing_qshrink_hash_File
+        on_logsession_missing_qshrink_hash_file
     )
     quts_client.setOnAsyncResponseCallback(on_async_response)
     quts_client.setOnDataQueueUpdatedCallback(on_data_queue_updated)
@@ -163,7 +192,7 @@ def set_all_callbacks(quts_client):
     quts_client.setOnQShrinkStateUpdated(on_qshrink_state_updated)
     # quts_client.setOnDecryptionKeyStatusUpdateCallback()
     quts_client.setOnLogSessionDecryptionKeyStatusUpdateCallback(
-        on_logsession_missing_qshrink_hash_File
+        on_logsession_missing_qshrink_hash_file
     )
 
 
@@ -192,14 +221,14 @@ def create_filters(all_filters):
     diag_packet_filter.idOrNameMask = {}
     for packetType in all_filters:
         list_of_id = []
-        for id in all_filters[packetType]:  ##for string value create a IdOrName
+        for id in all_filters[packetType]:  # for string value create a IdOrName
             list_of_id.append(Common.ttypes.DiagIdFilterItem(idOrName=id))
         diag_packet_filter.idOrNameMask[packetType] = list_of_id
     return diag_packet_filter
 
 
 def create_data_queue_for_monitoring(diag_service, queue_name):
-    ### Createa data Queue. Reading will be done in the callback.
+    #  Create a data Queue. Reading will be done in the callback.
     all_filters = dict()
     all_filters[Common.ttypes.DiagPacketType.LOG_PACKET] = log_packet_filter_item
     all_filters[Common.ttypes.DiagPacketType.EVENT] = event_filter_item
