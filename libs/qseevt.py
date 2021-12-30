@@ -4,26 +4,25 @@
 # Date:     June 12th 2018
 # =================================================================
 import logging
+
+# from log import logger
+import sys
+
 from pywinauto import application
 
 # from pywinauto.findbestmatch import find_best_match
 # from pywinauto.findwindows import find_window
 # import pywinauto.findwindows as findwindows
-from pywinauto.handleprops import children, dumpwindow
+from pywinauto.handleprops import dumpwindow
+
+from libs.utils import *
 
 # classname, clientrect, contexthelpid, \
 # controlid, exstyle, font, has_exstyle, has_style, is64bitprocess, \
 # is_toplevel_window, isenabled, isunicode, isvisible, iswindow, parent, processid, \
 # rectangle, style, text, userdata
-import os
-
 # import win32gui
 # import re
-import time
-
-# from log import logger
-import ctypes, sys
-from libs.utils import *
 
 # logger = logging.getLogger(__name__)
 

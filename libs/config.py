@@ -5,10 +5,9 @@
 """
 __filename__ = "config"
 __author__ = "@henry.fan"
+import logging
 import os
 from enum import Enum
-import logging
-
 
 path = os.path.dirname(__file__)
 LOG_LEVEL = logging.INFO

@@ -7,11 +7,11 @@ __filename__ = "adb"
 __version__ = "init"
 __author__ = "@henry.fan"
 
+import json
 import logging
 import os
 import subprocess
 import time
-import json
 
 
 class ADB:
@@ -71,7 +71,7 @@ class ADB:
             try:
                 ret = subprocess.run(cmd, timeout=2)
                 dev_ready = True if ret.returncode == 0 else False
-            except subprocess.TimeoutExpired as e:
+            except subprocess.TimeoutExpired:
                 i += 1
 
     def adb_remount(self):

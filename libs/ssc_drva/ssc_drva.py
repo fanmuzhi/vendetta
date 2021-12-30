@@ -7,10 +7,11 @@ __filename__ = "ssc_drva"
 __version__ = "init"
 __author__ = "@henry.fan"
 
-import logging
 import sys
 from subprocess import PIPE, TimeoutExpired
+
 from libs.adb.adb import ADB
+
 
 # from log import logger
 

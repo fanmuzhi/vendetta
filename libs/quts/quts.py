@@ -9,8 +9,6 @@ __author__ = "@henry.fan"
 
 import contextlib
 import sys
-import time
-import re
 
 # The path where QUTS files are installed
 if sys.platform.startswith("linux"):
@@ -20,15 +18,9 @@ elif sys.platform.startswith("win"):
 elif sys.platform.startswith("darwin"):
     sys.path.append('/Applications/Qualcomm/QUTS/QUTS.app/Contents/Support/python')
 
-
-import QutsClient
 import Common.ttypes
 
-import DeviceConfigService.DeviceConfigService
-import DeviceConfigService.constants
 import DeviceManager.DeviceManager
-import DiagService.DiagService
-import DiagService.constants
 
 cur_txt = r'C:\Users\FNH1SGH\Desktop\a.txt'
 log_packet_filter_item = [

@@ -7,16 +7,17 @@ __filename__ = "utils"
 __version__ = "init"
 __author__ = "@henry.fan"
 
-import os
-import re
-from datetime import datetime
 import ctypes
 import json
+import os
+import re
 import time
-from libs.ssc_drva.ssc_drva import SscDrvaParams
-from libs.adb.adb import ADB
+from datetime import datetime
+
 from libs import config as cfg
+from libs.adb.adb import ADB
 from libs.quts.quts import logging_diag_hdf
+from libs.ssc_drva.ssc_drva import SscDrvaParams
 
 datetime_format = '%Y%m%d_%H%M%S'
 

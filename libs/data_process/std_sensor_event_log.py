@@ -7,9 +7,10 @@ __filename__ = "csv_log_parser"
 __version__ = "init"
 __author__ = "@henry.fan"
 
+import math
 import os
 import re
-import math
+
 import pandas as pd
 
 # import matplotlib.pyplot as plt

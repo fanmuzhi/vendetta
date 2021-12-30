@@ -7,10 +7,11 @@ __filename__ = "registry"
 __version__ = "init"
 __author__ = "@henry.fan"
 
-import os
 import json
-from libs.adb.adb import ADB
+import os
+
 from libs import config as cfg
+from libs.adb.adb import ADB
 
 
 class ConfigJson:

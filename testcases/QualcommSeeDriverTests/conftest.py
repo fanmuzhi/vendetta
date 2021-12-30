@@ -6,19 +6,19 @@
 __filename__ = "conftest.py"
 __version__ = "init"
 __author__ = "@henry.fan"
-import os
-import pytest
-import itertools
-import xml.dom.minidom
 import csv
+import itertools
 import json
+import os
 
-from libs.ssc_drva.ssc_drva import SscDrvaTest
-from libs.quts.quts import *
-from libs.adb.adb import ADB
-from libs import qseevt
-import libs.utils as utils
+import pytest
+
 import libs.config as cfg
+import libs.utils as utils
+from libs import qseevt
+from libs.adb.adb import ADB
+from libs.quts.quts import *
+from libs.ssc_drva.ssc_drva import SscDrvaTest
 
 fdmc = os.path.join(os.path.dirname(__file__), 'mydmc.dmc')
 # n_hw = 1
