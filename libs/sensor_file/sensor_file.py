@@ -19,12 +19,12 @@ class ConfigJson:
 
     def __init__(self, json_file):
         self._json_file = json_file
-        self._json_buffer = {}
+        self._json_buffer = dict()
         # self.load_local_json()
 
     def load_local_json(self):
-        with open(self._json_file) as registry:
-            self._json_buffer = json.load(registry)
+        with open(self._json_file) as reg:
+            self._json_buffer = json.load(reg)
 
     def load_remote_json(self, dev_id=None):
         cat = ADB(dev_id).adb_cat(self._json_file)
@@ -108,7 +108,7 @@ class FacCalBias(ConfigJson):
     def read_imu_bias_values(self, sensor):
         if not sensor:
             return
-        self._json_buffer = self.load_remote_json()
+        self.load_remote_json()
         root = list(self._json_buffer.keys())[0]
         return (
             int(self._json_buffer[root]['x']['ver']),
@@ -118,7 +118,7 @@ class FacCalBias(ConfigJson):
 
 
 if __name__ == '__main__':
-    regfile = r'C:\workspace\BPDD\SEE\8250_androidQ\config\kona_hdk_bmi26x_0.json'
+    reg_file = r'C:\workspace\BPDD\SEE\8250_androidQ\config\kona_hdk_bmi26x_0.json'
     prod = cfg.Product.bmi26x
-    reg = Registry(regfile, prod)
-    reg.reset_orig_reg()
+    registry = Registry(reg_file, prod)
+    registry.reset_orig_reg()

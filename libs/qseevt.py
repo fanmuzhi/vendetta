@@ -259,7 +259,7 @@ def analyze_hdf_file(hdf_file, seevt_exe, out=False):
         p_qawa.wait(log_analysis_window_name, wait_until)
     except application.AppStartError as e:
         logging.error(e)
-    name, ext = os.path.splitext(hdf_file)
+    # name, ext = os.path.splitext(hdf_file)
     try:
         assert os.path.exists(hdf_file)
     except AssertionError:
@@ -308,8 +308,8 @@ def analyze_hdf_file(hdf_file, seevt_exe, out=False):
 
 if __name__ == "__main__":
     hdf = r'C:\Users\FNH1SGH\Desktop\hdfs\11-08.15-27-30-425.hdf'
-    ret_val = False
-    wait_until = 'ready'
+    # ret_val = False
+    # wait_until = 'ready'
 
     print(is_admin())
 

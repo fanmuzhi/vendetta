@@ -75,7 +75,6 @@ def calc_interval_ms(odr):
 
 
 def fac_during_streaming(testcase):
-
     if testcase is not None and 'ssc_drva_tags' in testcase:
         keys = []
         for tag in testcase['ssc_drva_tags']:

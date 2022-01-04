@@ -259,23 +259,24 @@ def pytest_generate_tests(metafunc):
         if len(sensor_list) < 2:
             pytest.skip("skip")
         params_sensor = list(itertools.permutations(sensor_list, 2))
-        params_dur = null_params
+        # params_dur = null_params
         params_odr = [(-1, -2), (-1, -3.1), (-2, -3.2), (-3.0, -3.1)]
         params_factest_type = null_params
         params_hwid = list(zip(*[hw_ids] * 2))
         params_delays = list(itertools.product([None], [ssc_drva_delay]))
         params_list = []
         for odr in params_odr:
+            params_dur = [
+                (
+                    extern_conc_streamtest_odr_to_dur(odr[0]),
+                    extern_conc_streamtest_odr_to_dur(odr[1]),
+                )
+            ]
             params_list.extend(
                 list(
                     itertools.product(
                         params_sensor,
-                        [
-                            (
-                                extern_conc_streamtest_odr_to_dur(odr[0]),
-                                extern_conc_streamtest_odr_to_dur(odr[1]),
-                            )
-                        ],
+                        params_dur,
                         [odr],
                         params_factest_type,
                         params_hwid,
@@ -309,11 +310,11 @@ def pytest_generate_tests(metafunc):
         # sensors = [sensor_list]
         args = [cfg.res_values[sensor].keys() for sensor in sensor_list]
         rvs = list(zip(*args))
-        ranges = [dict(zip(sensor_list, t)) for t in rvs]
+        range_vals = [dict(zip(sensor_list, t)) for t in rvs]
         metafunc.parametrize(
             'change_registry_res_value',
-            ranges,
-            ids=[resvalue_id_str(r) for r in ranges],
+            range_vals,
+            ids=[resvalue_id_str(r) for r in range_vals],
             scope='class',
             indirect=True,
             # scope='class'
@@ -564,7 +565,7 @@ def qseevt_open(check_protos):
 
 
 @pytest.fixture(scope='package')
-def check_protos(request):
+def check_protos():
     if not os.path.exists(cfg.seevt_protos_dir) or not os.listdir(cfg.seevt_protos_dir):
         return False
     if not os.path.exists(r'C:\ProgramData\Qualcomm\Qualcomm_SEEVT\Protos.config'):

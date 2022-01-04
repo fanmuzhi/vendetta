@@ -24,6 +24,7 @@ import Common.ttypes
 
 import DeviceConfigService.DeviceConfigService
 import DeviceConfigService.constants
+
 # import DeviceManager.DeviceManager
 import DeviceManager.constants
 import DiagService.DiagService
@@ -79,7 +80,7 @@ debug_msg_filter_item = [
 
 
 def on_message(level, location, title, description):
-    print("Message Received " + title + " " + description)
+    print(f"Message Received {level, location, title, description}")
 
 
 def on_device_connected():
@@ -119,7 +120,7 @@ def on_async_response():
 
 
 def on_data_queue_updated(queue_name, queue_size):
-    print("queueName = ", queue_name, ", current queueSize = ", queue_size)
+    print("QueueName = ", queue_name, ", current queueSize = ", queue_size)
     # global cur_txt
     # with open(cur_txt, 'a') as f:
     #     diagPackets = DiagService.DiagService.getDataQueueItems("data", 1, 10)
@@ -150,48 +151,48 @@ def quts_client(name):
     return QutsClient.QutsClient(name)
 
 
-def device_service(quts_client, quts_device_handle):
+def device_service(quts_client_obj, quts_device_handle):
     return DeviceConfigService.DeviceConfigService.Client(
-        quts_client.createService(
+        quts_client_obj.createService(
             DeviceConfigService.constants.DEVICE_CONFIG_SERVICE_NAME,
             quts_device_handle,
         )
     )
 
 
-def diagservice_client(quts_client, quts_device_handle):
+def diagservice_client(quts_client_obj, quts_device_handle):
     return DiagService.DiagService.Client(
-        quts_client.createService(
+        quts_client_obj.createService(
             DiagService.constants.DIAG_SERVICE_NAME, quts_device_handle
         )
     )
 
 
-def set_all_callbacks(quts_client):
-    quts_client.setOnMessageCallback(on_message)
-    quts_client.setOnDeviceConnectedCallback(on_device_connected)
-    quts_client.setOnDeviceDisconnectedCallback(on_device_disconnected)
-    quts_client.setOnDeviceModeChangeCallback(on_device_mode_change)
-    quts_client.setOnProtocolAddedCallback(on_protocol_added)
-    quts_client.setOnProtocolRemovedCallback(on_protocol_removed)
-    quts_client.setOnProtocolStateChangeCallback(on_protocol_state_change)
-    # quts_client.setOnProtocolFlowControlStatusChangeCallback()
-    # quts_client.setOnProtocolLockStatusChangeCallback()
-    # quts_client.setOnProtocolMbnDownloadStatusChangeCallback()
-    # quts_client.setOnClientCloseRequestCallback()
-    quts_client.setOnMissingQShrinkHashFileCallback(on_missing_qshrink_hash_file)
-    quts_client.setOnLogSessionMissingQShrinkHashFileCallback(
+def set_all_callbacks(quts_client_obj):
+    quts_client_obj.setOnMessageCallback(on_message)
+    quts_client_obj.setOnDeviceConnectedCallback(on_device_connected)
+    quts_client_obj.setOnDeviceDisconnectedCallback(on_device_disconnected)
+    quts_client_obj.setOnDeviceModeChangeCallback(on_device_mode_change)
+    quts_client_obj.setOnProtocolAddedCallback(on_protocol_added)
+    quts_client_obj.setOnProtocolRemovedCallback(on_protocol_removed)
+    quts_client_obj.setOnProtocolStateChangeCallback(on_protocol_state_change)
+    # quts_client_obj.setOnProtocolFlowControlStatusChangeCallback()
+    # quts_client_obj.setOnProtocolLockStatusChangeCallback()
+    # quts_client_obj.setOnProtocolMbnDownloadStatusChangeCallback()
+    # quts_client_obj.setOnClientCloseRequestCallback()
+    quts_client_obj.setOnMissingQShrinkHashFileCallback(on_missing_qshrink_hash_file)
+    quts_client_obj.setOnLogSessionMissingQShrinkHashFileCallback(
         on_logsession_missing_qshrink_hash_file
     )
-    quts_client.setOnAsyncResponseCallback(on_async_response)
-    quts_client.setOnDataQueueUpdatedCallback(on_data_queue_updated)
-    quts_client.setOnDataViewUpdatedCallback(on_data_view_updated)
-    quts_client.setOnServiceAvailableCallback(on_service_available)
-    quts_client.setOnServiceEndedCallback(on_service_ended)
-    quts_client.setOnServiceEventCallback(on_service_event)
-    quts_client.setOnQShrinkStateUpdated(on_qshrink_state_updated)
+    quts_client_obj.setOnAsyncResponseCallback(on_async_response)
+    quts_client_obj.setOnDataQueueUpdatedCallback(on_data_queue_updated)
+    quts_client_obj.setOnDataViewUpdatedCallback(on_data_view_updated)
+    quts_client_obj.setOnServiceAvailableCallback(on_service_available)
+    quts_client_obj.setOnServiceEndedCallback(on_service_ended)
+    quts_client_obj.setOnServiceEventCallback(on_service_event)
+    quts_client_obj.setOnQShrinkStateUpdated(on_qshrink_state_updated)
     # quts_client.setOnDecryptionKeyStatusUpdateCallback()
-    quts_client.setOnLogSessionDecryptionKeyStatusUpdateCallback(
+    quts_client_obj.setOnLogSessionDecryptionKeyStatusUpdateCallback(
         on_logsession_missing_qshrink_hash_file
     )
 
@@ -221,8 +222,8 @@ def create_filters(all_filters):
     diag_packet_filter.idOrNameMask = {}
     for packetType in all_filters:
         list_of_id = []
-        for id in all_filters[packetType]:  # for string value create a IdOrName
-            list_of_id.append(Common.ttypes.DiagIdFilterItem(idOrName=id))
+        for item_id in all_filters[packetType]:  # for string value create a IdOrName
+            list_of_id.append(Common.ttypes.DiagIdFilterItem(idOrName=item_id))
         diag_packet_filter.idOrNameMask[packetType] = list_of_id
     return diag_packet_filter
 
@@ -285,7 +286,7 @@ def logging_diag_hdf(dev_mgr: DeviceManager.DeviceManager.Client, hdf_file):
 def logging_data_queue(
     diag_service, queue_name, count=300000, timeout=20,
 ):
-    items = {}
+    items = dict()
     items[Common.ttypes.DiagPacketType.LOG_PACKET] = log_packet_filter_item
     items[Common.ttypes.DiagPacketType.EVENT] = event_filter_item
     items[Common.ttypes.DiagPacketType.DEBUG_MSG] = debug_msg_filter_item

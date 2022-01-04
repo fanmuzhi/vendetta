@@ -13,11 +13,11 @@ test_result_root_dir = r'c:\SeeTests'
 #  start prior init
 def app_prior_init():
     if sys.platform.startswith("linux"):
-        sys.path.append('/opt/qcom/QUTS/Support/python')
+        sys.path.append(r'/opt/qcom/QUTS/Support/python')
     elif sys.platform.startswith("win"):
-        sys.path.append('C:\Program Files (x86)\Qualcomm\QUTS\Support\python')
+        sys.path.append(r'C:\Program Files (x86)\Qualcomm\QUTS\Support\python')
     elif sys.platform.startswith("darwin"):
-        sys.path.append('/Applications/Qualcomm/QUTS/QUTS.app/Contents/Support/python')
+        sys.path.append(r'/Applications/Qualcomm/QUTS/QUTS.app/Contents/Support/python')
     else:
         sys.exit("unrecognized system platform")
 #  end prior init

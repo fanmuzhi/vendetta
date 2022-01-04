@@ -128,8 +128,8 @@ class ADB:
         ret = self.adb_shell_run(cmd, check=True, timeout=60)
         return ret
 
-    def adb_rm_all_files_in(self, dir):
-        cmd = ['rm', '-rf', os.path.join(dir, "*")]
+    def adb_rm_all_files_in(self, path):
+        cmd = ['rm', '-rf', os.path.join(path, "*")]
         ret = self.adb_shell_run(cmd, check=True, timeout=60)
         self.adb_wait_for_device()
         return ret
