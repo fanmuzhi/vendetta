@@ -330,10 +330,7 @@ def pytest_generate_tests(metafunc):
 def collect_sscdrva_result(
     ssc_drva, quts_dev_mgr, quts_diag_service, data_queue, request, log_path
 ):
-    # log_path = request.config.getoption("--log_dir")
     productname = request.config.getoption("--product")
-    # test_info = f'{product}_{utils.datetime_str()}'
-    # log_path = os.path.join(test_result_root_dir, test_info, 'log')
     calib_sensor = None
     diag_packets_list = []
     bias_result = []
@@ -344,10 +341,7 @@ def collect_sscdrva_result(
         'hdf': None,
         'drv_log': None,
     }
-    # time_str = f'{utils.datetime.now().strftime(utils.datetime_format)}'
     file_name = f"{request.cls.__name__}-{request.node.name}"
-    # print(f'\nfilename: {file_name}')
-    # file_name = rf"{log_file_name(request.param)}"
     hdflogfile = os.path.join(log_path, f'{file_name}.hdf')
     drvlogfile = os.path.join(log_path, f'{file_name}.csv')
 

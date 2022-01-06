@@ -8,21 +8,6 @@ import pytest
 from libs import utils
 
 test_result_root_dir = r'c:\SeeTests'
-
-
-#  start prior init
-def app_prior_init():
-    if sys.platform.startswith("linux"):
-        sys.path.append(r'/opt/qcom/QUTS/Support/python')
-    elif sys.platform.startswith("win"):
-        sys.path.append(r'C:\Program Files (x86)\Qualcomm\QUTS\Support\python')
-    elif sys.platform.startswith("darwin"):
-        sys.path.append(r'/Applications/Qualcomm/QUTS/QUTS.app/Contents/Support/python')
-    else:
-        sys.exit("unrecognized system platform")
-#  end prior init
-
-
 product = ''
 defualt_testpath = r'testcases\QualcommSeeDriverTests\test_imu_driver.py'
 
@@ -37,21 +22,19 @@ default_args = [
 ]
 
 if __name__ == '__main__':
-    app_prior_init()
     argv = sys.argv[1:]
-
-    if '--product' not in argv or '--product' == argv[-1]:
-        print("argument --product not assigned")
-        sys.exit(1)
-    else:
-        product = argv[argv.index('--product') + 1]
 
     if not argv[0].startswith(defualt_testpath):
         argv = [defualt_testpath] + argv
 
-    if not product or not utils.get_sensorlist(product):
+    if '--product' not in argv or '--product' == argv[-1]:
+        print("argument --product not assigned")
+        sys.exit(1)
+    elif not argv[argv.index('--product')+1] or not utils.get_sensorlist(argv[argv.index('--product')+1]):
         print('invalid product name')
         sys.exit(1)
+        # product = argv[argv.index('--product') + 1]
+    # if not product or not utils.get_sensorlist(product):
 
     for arg in default_args:
         if arg not in argv:

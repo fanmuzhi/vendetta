@@ -10,12 +10,15 @@ __author__ = "@henry.fan"
 import sys
 
 # The path where QUTS files are installed
+quts_path = ''
 if sys.platform.startswith("linux"):
-    sys.path.append('/opt/qcom/QUTS/Support/python')
+    quts_path = '/opt/qcom/QUTS/Support/python'
 elif sys.platform.startswith("win"):
-    sys.path.append(r'C:\Program Files (x86)\Qualcomm\QUTS\Support\python')
+    quts_path = r'C:\Program Files (x86)\Qualcomm\QUTS\Support\python'
 elif sys.platform.startswith("darwin"):
-    sys.path.append('/Applications/Qualcomm/QUTS/QUTS.app/Contents/Support/python')
+    quts_path = '/Applications/Qualcomm/QUTS/QUTS.app/Contents/Support/python'
+if quts_path and quts_path not in sys.path:
+    sys.path.append(quts_path)
 
 import contextlib
 
@@ -252,11 +255,6 @@ def create_data_queue_for_monitoring(diag_service, queue_name):
         queue_name, diag_packet_filter, return_obj_diag
     )
     return error_code
-    # if error_code != 0:
-    #     print("Error  creating data queue", error_code)
-    #     sys.exit(1)
-    # else:
-    #     print("Data queue Created")
 
 
 def update_filters_to_queue(diag_service, all_filters, queue_name, add_or_remove):
@@ -292,7 +290,6 @@ def logging_data_queue(
     items[Common.ttypes.DiagPacketType.DEBUG_MSG] = debug_msg_filter_item
     # create_data_queue_for_monitoring(diag_service, items, 'data')
     # diag_service.createDataQueue(queue_name, diag_packet_filter, return_obj_diag)
-    # yield
     diag_packets = diag_service.getDataQueueItems(queue_name, count, timeout)
     yield diag_packets
     # for diag_packet in diag_packets:
@@ -304,6 +301,3 @@ def logging_data_queue(
 
 if __name__ == "__main__":
     pass
-    # quts_obj = ()
-    # services = quts_obj.list_services()
-    # print(services)

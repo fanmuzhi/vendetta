@@ -16,7 +16,8 @@ from datetime import datetime
 
 from libs import config as cfg
 from libs.adb.adb import ADB
-from libs.quts.quts import logging_diag_hdf
+
+# from libs.quts.quts import logging_diag_hdf
 from libs.ssc_drva.ssc_drva import SscDrvaParams
 
 datetime_format = '%Y%m%d_%H%M%S'
@@ -36,13 +37,20 @@ def datetime_str():
 
 def get_sensorlist(productname: str):
     if productname.lower().startswith('bmi'):
-        sensor_list = [cfg.Sensor.acc.value, cfg.Sensor.gyr.value]
+        sensor_list = [
+            cfg.Sensor.acc.value,
+            cfg.Sensor.gyr.value,
+        ]
     elif productname.lower().startswith('bma'):
         sensor_list = [cfg.Sensor.acc.value]
     elif productname.lower().startswith('bmg'):
         sensor_list = [cfg.Sensor.gyr.value]
     elif productname.lower().startswith('bmx'):
-        sensor_list = [cfg.Sensor.acc.value, cfg.Sensor.gyr.value, cfg.Sensor.mag.value]
+        sensor_list = [
+            cfg.Sensor.acc.value,
+            cfg.Sensor.gyr.value,
+            cfg.Sensor.mag.value,
+        ]
     else:
         sensor_list = []
     return sensor_list
@@ -104,26 +112,26 @@ def imu_bias_values(productname, sensor):
     )
 
 
-def collect_csvs(ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, param_sets):
-    log_path = r"C:\temp\testlog"
-    file_name = rf"{log_file_name(param_sets)}.hdf"
-    logfile = os.path.join(log_path, file_name)
-    ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(param_sets=param_sets)
-    # print(" ".join(ssc_drva_cmd))
-
-    with logging_diag_hdf(quts_dev_mgr, logfile):
-        ssc_drva.ssc_drva_run(ssc_drva_cmd)
-    qseevt.set_hdffile_text(logfile)
-    qseevt.set_sensor_info_file_text(info_file=sensor_info_txt)
-    qseevt.run_log_analysis()
-    while not qseevt.analyze_complete():
-        time.sleep(0.1)
-    parsed_folder = os.path.splitext(logfile)[0]
-    csv_data_logs = []
-    for par, dirs, files in os.walk(parsed_folder):
-        csv_data_logs += [os.path.join(par, f) for f in files if valid_csv_name(f)]
-
-    return csv_data_logs
+# def collect_csvs(ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, param_sets):
+#     log_path = r"C:\temp\testlog"
+#     file_name = rf"{log_file_name(param_sets)}.hdf"
+#     logfile = os.path.join(log_path, file_name)
+#     ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(param_sets=param_sets)
+#     # print(" ".join(ssc_drva_cmd))
+#
+#     with logging_diag_hdf(quts_dev_mgr, logfile):
+#         ssc_drva.ssc_drva_run(ssc_drva_cmd)
+#     qseevt.set_hdffile_text(logfile)
+#     qseevt.set_sensor_info_file_text(info_file=sensor_info_txt)
+#     qseevt.run_log_analysis()
+#     while not qseevt.analyze_complete():
+#         time.sleep(0.1)
+#     parsed_folder = os.path.splitext(logfile)[0]
+#     csv_data_logs = []
+#     for par, dirs, files in os.walk(parsed_folder):
+#         csv_data_logs += [os.path.join(par, f) for f in files if valid_csv_name(f)]
+#
+#     return csv_data_logs
 
 
 if __name__ == "__main__":

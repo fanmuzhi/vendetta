@@ -30,7 +30,7 @@ MAG_STDDEV_LIMIT = 1.0  # 1uT in XY axis
 MAG_STDDEV_LIMIT_Z = 1.4  # 1.4uT in XY axis
 INTERVAL_COEFF_L, INTERVAL_COEFF_H = 0.0, 1.8
 
-result = {True: 'Pass', False: 'Fail', None: 'N/A'}
+# result = {True: 'Pass', False: 'Fail', None: 'N/A'}
 axises = ['x', 'y', 'z']
 units = {'accel': 'm/s^2', 'gyro': 'rad/s', 'mag': 'µT'}
 
@@ -72,20 +72,6 @@ def calc_actual_odr(request_odr):
 
 def calc_interval_ms(odr):
     return 1000 / odr
-
-
-def fac_during_streaming(testcase):
-    if testcase is not None and 'ssc_drva_tags' in testcase:
-        keys = []
-        for tag in testcase['ssc_drva_tags']:
-            if isinstance(tag, dict):
-                keys += list(tag.keys())
-        if 'sample_rate' in keys and 'factory_test' in keys:
-            return True
-        else:
-            return False
-    else:
-        return False
 
 
 class SeeDrvLog:
@@ -188,30 +174,6 @@ class SeeDrvLog:
     def get_col_stats(self, col_name):
         return self.data_df[col_name].describe()
 
-    def get_range_result(self, axis):
-        sensorbase = data_bases.get(self.sensor).get(axis)
-        sensoroffset = data_offsets.get(self.sensor).get(axis)
-        min_val = self.get_min(
-            f'{self.sensor.capitalize()} {axis.upper()} ({units.get(self.sensor)})'
-        )
-        max_val = self.get_max(
-            f'{self.sensor.capitalize()} {axis.upper()} ({units.get(self.sensor)})'
-        )
-        rslt = result[
-            sensorbase - sensoroffset <= min_val <= max_val <= sensorbase + sensoroffset
-        ]
-        return {
-            f'AXIS_{axis}_min_max [{sensorbase - sensoroffset} <= {min_val} <= {max_val} <= {sensorbase + sensoroffset}]': rslt
-        }
-
-    def get_stddev_result(self, axis):
-        stddev_limit = stddev_limits.get(self.sensor).get(axis)
-        stddev = self.get_std(
-            f'{self.sensor.capitalize()} {axis.upper()} ({units.get(self.sensor)})'
-        )
-        rslt = result[0 <= stddev <= stddev_limit]
-        return {f'AXIS_{axis}_std_dev [0 <= {stddev} <= {stddev_limit}]': rslt}
-
     @staticmethod
     def valid_csv_name(csv_name):
         if os.path.splitext(csv_name)[1] != '.csv':
@@ -262,11 +224,7 @@ class SeeDrvLog:
 
 
 if __name__ == '__main__':
-    # import json
-    # from pprint import pp
-
     pd.set_option('display.max_columns', None)
     pd.set_option('display.width', None)
-
     folder = r'C:\Users\FNH1SGH\Desktop\logs\dlf\20210830161604_Stream_ssr=mag_dur=30_sr=-1_hw=0\Data'
     # folder_parsing(folder, skip_data=1)
