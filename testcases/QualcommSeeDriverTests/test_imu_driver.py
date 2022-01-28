@@ -83,6 +83,13 @@ def verify_stream_test_result(
                 log_obj.check_data_range(col_name, axis)
             with pytest.assume:
                 log_obj.check_data_stddev(col_name, axis)
+        if sensor_name == cfg.Sensor.mag.value:
+            with pytest.assume:
+                col_names = [
+                    f'{sensor_name.capitalize()} {axis.upper()} ({log_obj.unit})'
+                    for axis in std_sensor_event_log.axises
+                ]
+                log_obj.check_norm_ord(*col_names)
 
 
 class TestFactoryTest(object):

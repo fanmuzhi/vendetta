@@ -15,10 +15,11 @@ import re
 import pytest
 
 import libs.config as cfg
-import libs.utils as utils
+from libs import utils
 from libs import qseevt
+import libs.quts as quts
+
 from libs.adb.adb import ADB
-from libs.quts import quts
 from libs.ssc_drva.ssc_drva import SscDrvaTest
 
 fdmc = os.path.join(os.path.dirname(__file__), 'mydmc.dmc')
@@ -79,7 +80,7 @@ def pytest_addoption(parser):
     #     "--log_dir",
     #     action="store",
     #     # default=default_log_dir,
-    #     help="Customize an location to save test log files",
+    #     help="Customize a location to save test log files",
     # )
     # parser.addoption(
     #     "--report_dir",
@@ -285,10 +286,16 @@ def pytest_generate_tests(metafunc):
                 )
             )
 
-    if "test_dual_hw_stream" == metafunc.definition.name:
-        if int(getattr(metafunc.config.option, 'nhw', 1)) < 2:
-            pytest.skip("skip")
+    if (
+        int(getattr(metafunc.config.option, 'nhw', 1)) >= 2
+        and "TestDualHardwares" == metafunc.cls.__name__
+    ):
+        # if int(getattr(metafunc.config.option, 'nhw', 1)) < 2:
+        #     pytest.skip("skip")
         # else:
+        # return
+        # else:
+
         params_list = [
             (('accel', 'accel'), (60, 60), (-1, -2), None, (0, 1), None),
             (('gyro', 'gyro'), (60, 60), (-1, -2), None, (0, 1), None),
@@ -298,14 +305,6 @@ def pytest_generate_tests(metafunc):
             (('accel', 'gyro'), (30, 30), (-2, -1), None, (0, 1), (None, 2)),
             (('gyro', 'accel'), (30, 30), (-2, -1), None, (0, 1), (None, 2)),
         ]
-
-    params_sets_list = [
-        setup_param_sets(dict(zip(using_ssc_drva_keys, param))) for param in params_list
-    ]
-    ids = [
-        test_case_id_str(dict(zip(using_ssc_drva_keys, param))) for param in params_list
-    ]
-
     if "change_registry_res_value" in metafunc.fixturenames:
         # sensors = [sensor_list]
         args = [cfg.res_values[sensor].keys() for sensor in sensor_list]
@@ -319,7 +318,12 @@ def pytest_generate_tests(metafunc):
             indirect=True,
             # scope='class'
         )
-
+    params_sets_list = [
+        setup_param_sets(dict(zip(using_ssc_drva_keys, param))) for param in params_list
+    ]
+    ids = [
+        test_case_id_str(dict(zip(using_ssc_drva_keys, param))) for param in params_list
+    ]
     if 'collect_sscdrva_result' in metafunc.fixturenames:
         metafunc.parametrize(
             'collect_sscdrva_result', params_sets_list, ids=ids, indirect=True,
@@ -415,10 +419,10 @@ def isadmin():
 
 @pytest.fixture(scope='package', autouse=True)
 def log_path(request):
-    # log_path = request.config.getoption("--log_dir")
-    product = request.config.getoption("--product")
-    test_info = f'{product}_{utils.datetime_str()}'
-    log_path = os.path.join(test_result_root_dir, test_info, 'log')
+    log_path = request.config.getoption("--log_dir")
+    # product = request.config.getoption("--product")
+    # test_info = f'{product}_{utils.datetime_str()}'
+    # log_path = os.path.join(test_result_root_dir, test_info, 'log')
     os.makedirs(log_path, exist_ok=True)
     yield log_path
     # os.makedirs(default_report_dir, exist_ok=True)

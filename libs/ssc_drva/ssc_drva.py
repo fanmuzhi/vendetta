@@ -13,9 +13,6 @@ from subprocess import PIPE, TimeoutExpired
 from libs.adb.adb import ADB
 
 
-# from log import logger
-
-
 class SscDrvaParams:
     valid_keys_and_sort = {
         'sensor': 'ssr',

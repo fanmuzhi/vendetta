@@ -45,6 +45,8 @@ def get_sensorlist(productname: str):
         sensor_list = [cfg.Sensor.acc.value]
     elif productname.lower().startswith('bmg'):
         sensor_list = [cfg.Sensor.gyr.value]
+    elif productname.lower().startswith('bmm'):
+        sensor_list = [cfg.Sensor.mag.value]
     elif productname.lower().startswith('bmx'):
         sensor_list = [
             cfg.Sensor.acc.value,

@@ -140,6 +140,7 @@ class ADB:
         return ret.stdout
 
     def adb_sensor_info(self):
+        self.adb_root()
         cmd = ['ssc_sensor_info']
         ret = self.adb_shell_run(
             cmd, stdout=subprocess.PIPE, encoding='utf-8', check=True, timeout=60

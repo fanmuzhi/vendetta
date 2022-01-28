@@ -89,9 +89,9 @@ odr_to_interval = {
 }
 
 res_values = {
-    Sensor.acc.value: {0: '2g', 1: '4g', 2: '8g', 3: '16g'},
-    Sensor.gyr.value: {1: '250dps', 2: '500dps', 3: '1000dps', 4: '2000dps'},
-    Sensor.mag.value: {1: 'res_1', 2: 'res_1', 3: 'res_3', 4: 'res_4'},
+    Sensor.acc.value: {0: '±2g', 1: '±4g', 2: '±8g', 3: '±16g'},
+    Sensor.gyr.value: {1: '±250dps', 2: '±500dps', 3: '±1000dps', 4: '±2000dps'},
+    Sensor.mag.value: {1: '±1300uT'},
 }
 
 
@@ -112,9 +112,6 @@ class GyrRes(Enum):
 
 class MagRes(Enum):
     res_1 = 1
-    res_2 = 2
-    res_3 = 3
-    res_4 = 4
 
 
 res_idx_dict = {

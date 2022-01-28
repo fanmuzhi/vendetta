@@ -8,6 +8,7 @@ __version__ = "init"
 __author__ = "@henry.fan"
 
 import sys
+import contextlib
 
 # The path where QUTS files are installed
 quts_path = ''
@@ -20,11 +21,9 @@ elif sys.platform.startswith("darwin"):
 if quts_path and quts_path not in sys.path:
     sys.path.append(quts_path)
 
-import contextlib
 
 import QutsClient
 import Common.ttypes
-
 import DeviceConfigService.DeviceConfigService
 import DeviceConfigService.constants
 

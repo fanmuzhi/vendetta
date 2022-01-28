@@ -10,7 +10,7 @@ __author__ = "@henry.fan"
 import math
 import os
 import re
-
+import numpy as np
 import pandas as pd
 
 # import matplotlib.pyplot as plt
@@ -28,6 +28,7 @@ ACC_STDDEV_LIMIT = 0.156960  # m/s2
 GYR_STDDEV_LIMIT = 0.009774  # rad/s
 MAG_STDDEV_LIMIT = 1.0  # 1uT in XY axis
 MAG_STDDEV_LIMIT_Z = 1.4  # 1.4uT in XY axis
+MAG_NORM_LIMIT_L, MAG_NORM_LIMIT_H = 0.0, 100.00
 INTERVAL_COEFF_L, INTERVAL_COEFF_H = 0.0, 1.8
 
 # result = {True: 'Pass', False: 'Fail', None: 'N/A'}
@@ -60,10 +61,10 @@ def print_df(dataframe):
 
 
 def calc_actual_odr(request_odr):
-    if request_odr >= ODR_SUPPORTED_MAX:
-        return ODR_SUPPORTED_MAX
-    elif request_odr <= ODR_SUPPORTED_MIN:
-        return ODR_SUPPORTED_MIN
+    if not ODR_SUPPORTED_MIN <= request_odr <= ODR_SUPPORTED_MAX:
+        return request_odr
+    # elif request_odr <= ODR_SUPPORTED_MIN:
+    #     return ODR_SUPPORTED_MIN
     else:
         return ODR_SUPPORTED_MIN * (
             2 ** (math.ceil(math.log(request_odr / ODR_SUPPORTED_MIN, 2)))
@@ -221,6 +222,13 @@ class SeeDrvLog:
         assert (
             l_limit < stddev < h_limit
         ), f"{col_name} standard deviation {stddev} exceeds limit [{l_limit}, {h_limit}] in {self.csv_file}"
+
+    def check_norm_ord(self, *cols, ord=2):
+        norms = np.linalg.norm(self.data_df[list(cols)], ord=ord, axis=1)
+        norms_min, norms_max = min(norms), max(norms)
+        assert (
+            MAG_NORM_LIMIT_L < norms_min <= norms_max <= MAG_NORM_LIMIT_H
+        ), f'{cols} norm [{norms_min, norms_max}] out of range [{MAG_NORM_LIMIT_L, MAG_NORM_LIMIT_H}] in {self.csv_file}'
 
 
 if __name__ == '__main__':
