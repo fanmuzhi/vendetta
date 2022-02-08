@@ -419,10 +419,10 @@ def isadmin():
 
 @pytest.fixture(scope='package', autouse=True)
 def log_path(request):
-    log_path = request.config.getoption("--log_dir")
-    # product = request.config.getoption("--product")
-    # test_info = f'{product}_{utils.datetime_str()}'
-    # log_path = os.path.join(test_result_root_dir, test_info, 'log')
+    # log_path = request.config.getoption("--log_dir")
+    product = request.config.getoption("--product")
+    test_info = f'{product}_{utils.datetime_str()}'
+    log_path = os.path.join(test_result_root_dir, test_info, 'log')
     os.makedirs(log_path, exist_ok=True)
     yield log_path
     # os.makedirs(default_report_dir, exist_ok=True)
