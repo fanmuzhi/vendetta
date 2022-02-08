@@ -89,9 +89,9 @@ odr_to_interval = {
 }
 
 res_values = {
-    Sensor.acc.value: {0: '±2g', 1: '±4g', 2: '±8g', 3: '±16g'},
-    Sensor.gyr.value: {1: '±250dps', 2: '±500dps', 3: '±1000dps', 4: '±2000dps'},
-    Sensor.mag.value: {1: '±1300uT'},
+    Sensor.acc.value: {0: '2g', 1: '4g', 2: '8g', 3: '16g'},
+    Sensor.gyr.value: {1: '250dps', 2: '500dps', 3: '1000dps', 4: '2000dps'},
+    Sensor.mag.value: {0: '1300uT'},
 }
 
 

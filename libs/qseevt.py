@@ -215,9 +215,8 @@ class Qseevt(object):
         # richedit_content = dumpwindow(winlist[2])['text']
         # return richedit_content
 
-    def parse_hdf_to_csv(self, hdflogfile, sensor_info_txt):
+    def parse_hdf_to_csv(self, hdflogfile):
         self.set_hdffile_text(hdflogfile)
-        self.set_sensor_info_file_text(info_file=sensor_info_txt)
         self.run_log_analysis()
         while not self.analyze_complete():
             time.sleep(0.1)

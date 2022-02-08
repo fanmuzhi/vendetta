@@ -21,6 +21,7 @@ from libs.adb.adb import ADB
 from libs.ssc_drva.ssc_drva import SscDrvaParams
 
 datetime_format = '%Y%m%d_%H%M%S'
+adb = ADB()
 
 
 def is_admin():
@@ -33,6 +34,36 @@ def is_admin():
 
 def datetime_str():
     return datetime.now().strftime(datetime_format)
+
+
+def sensor_info_list():
+    sensor_info_text = adb.adb_sensor_info()
+    def produce_var(string):
+        try:
+            var = eval(string)
+        except (NameError, SyntaxError):
+            var = string
+        return var
+
+    sensor_collections = ('accel', 'gyro', 'mag')
+    sensor_info_list = list()
+    sensor_info = dict()
+    for line in sensor_info_text.splitlines():
+        if line.startswith('SUID') and sensor_info:
+            sensor_info_list.append(sensor_info)
+            sensor_info = dict()
+        try:
+            k, v = [s.strip() for s in line.split('=') if line.count('=') == 1]
+            sensor_info.update({produce_var(k): produce_var(v)})
+
+        except ValueError:
+            continue
+    # hw_ids = [sensor_info['HW_ID'] for sensor_info in sensor_info_list if sensor_info.get('HW_ID', None) is not None]
+    sensor_info_list = [sensor_info for sensor_info in sensor_info_list if
+                        sensor_info.get('VENDOR', '').lower() == 'bosch']
+    sensor_info_list = [sensor_info for sensor_info in sensor_info_list if
+                        sensor_info.get('TYPE', '').lower() in sensor_collections]
+    return sensor_info_list
 
 
 def get_sensorlist(productname: str):
@@ -114,7 +145,7 @@ def imu_bias_values(productname, sensor):
     )
 
 
-# def collect_csvs(ssc_drva, quts_dev_mgr, qseevt, sensor_info_txt, param_sets):
+# def collect_csvs(ssc_drva, quts_dev_mgr, qseevt, sensor_info_text, param_sets):
 #     log_path = r"C:\temp\testlog"
 #     file_name = rf"{log_file_name(param_sets)}.hdf"
 #     logfile = os.path.join(log_path, file_name)
@@ -124,7 +155,7 @@ def imu_bias_values(productname, sensor):
 #     with logging_diag_hdf(quts_dev_mgr, logfile):
 #         ssc_drva.ssc_drva_run(ssc_drva_cmd)
 #     qseevt.set_hdffile_text(logfile)
-#     qseevt.set_sensor_info_file_text(info_file=sensor_info_txt)
+#     qseevt.set_sensor_info_file_text(info_file=sensor_info_text)
 #     qseevt.run_log_analysis()
 #     while not qseevt.analyze_complete():
 #         time.sleep(0.1)

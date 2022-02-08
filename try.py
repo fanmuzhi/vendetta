@@ -76,3 +76,5 @@ if __name__ == "__main__":
 
     # sensor_info = sensor_info_lines
     pp(sensor_info_list)
+    l = []
+    l.sort()

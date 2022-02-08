@@ -11,6 +11,8 @@ import sys
 import contextlib
 
 # The path where QUTS files are installed
+import time
+
 quts_path = ''
 if sys.platform.startswith("linux"):
     quts_path = '/opt/qcom/QUTS/Support/python'
@@ -273,24 +275,38 @@ def update_filters_to_queue(diag_service, all_filters, queue_name, add_or_remove
 @contextlib.contextmanager
 def logging_diag_hdf(dev_mgr: DeviceManager.DeviceManager.Client, hdf_file):
     dev_mgr.startLogging()
-    yield
     device = get_device_handle(dev_mgr)
     diag_protocol = get_diag_protocal_handle(dev_mgr, device)
+    yield
     dev_mgr.saveLogFilesWithFilenames({diag_protocol: hdf_file})
 
 
 @contextlib.contextmanager
 def logging_data_queue(
-    diag_service, queue_name, count=300000, timeout=20,
+    diag_service, queue_name='data'
 ):
-    items = dict()
-    items[Common.ttypes.DiagPacketType.LOG_PACKET] = log_packet_filter_item
-    items[Common.ttypes.DiagPacketType.EVENT] = event_filter_item
-    items[Common.ttypes.DiagPacketType.DEBUG_MSG] = debug_msg_filter_item
+    # items = dict()
+    # items[Common.ttypes.DiagPacketType.LOG_PACKET] = log_packet_filter_item
+    # items[Common.ttypes.DiagPacketType.EVENT] = event_filter_item
+    # items[Common.ttypes.DiagPacketType.DEBUG_MSG] = debug_msg_filter_item
     # create_data_queue_for_monitoring(diag_service, items, 'data')
     # diag_service.createDataQueue(queue_name, diag_packet_filter, return_obj_diag)
-    diag_packets = diag_service.getDataQueueItems(queue_name, count, timeout)
-    yield diag_packets
+    queuename = queue_name
+    error_code = create_data_queue_for_monitoring(
+        diag_service, queue_name=queuename
+    )
+    if error_code != 0:
+        sys.exit("Error  creating data queue error code: {error_code}")
+    # diag_packets = diag_service.getDataQueueItems(queue_name, count, timeout)
+    diag_packets_list = []
+    yield diag_packets_list
+    diag_packets = diag_service.getDataQueueItems(queuename, 1, 20)
+    while diag_packets:
+        diag_packets_list.append(diag_packets[0])
+        diag_packets = diag_service.getDataQueueItems(queuename, 1, 20)
+
+    diag_service.removeDataQueue(queuename)
+
     # for diag_packet in diag_packets:
     #     if diag_packet.packetId == '125/1':
     #         print(diag_packet.summaryText)
@@ -299,4 +315,5 @@ def logging_data_queue(
 
 
 if __name__ == "__main__":
-    pass
+    with logging_diag_hdf(quts_client("BST MEMS Sensor Driver Test").getDeviceManager(), r'C:\SeeTests\aaa.hdf'):
+        time.sleep(10)
