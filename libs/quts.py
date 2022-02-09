@@ -282,9 +282,7 @@ def logging_diag_hdf(dev_mgr: DeviceManager.DeviceManager.Client, hdf_file):
 
 
 @contextlib.contextmanager
-def logging_data_queue(
-    diag_service, queue_name='data'
-):
+def logging_data_queue(diag_service, diag_packets_list, queue_name='data'):
     # items = dict()
     # items[Common.ttypes.DiagPacketType.LOG_PACKET] = log_packet_filter_item
     # items[Common.ttypes.DiagPacketType.EVENT] = event_filter_item
@@ -292,13 +290,12 @@ def logging_data_queue(
     # create_data_queue_for_monitoring(diag_service, items, 'data')
     # diag_service.createDataQueue(queue_name, diag_packet_filter, return_obj_diag)
     queuename = queue_name
-    error_code = create_data_queue_for_monitoring(
-        diag_service, queue_name=queuename
-    )
-    if error_code != 0:
-        sys.exit("Error  creating data queue error code: {error_code}")
-    # diag_packets = diag_service.getDataQueueItems(queue_name, count, timeout)
-    diag_packets_list = []
+    # error_code = create_data_queue_for_monitoring(
+    #     diag_service, queue_name=queuename
+    # )
+    # if error_code != 0:
+    #     sys.exit("Error  creating data queue error code: {error_code}")
+    # # diag_packets_list = []
     yield diag_packets_list
     diag_packets = diag_service.getDataQueueItems(queuename, 1, 20)
     while diag_packets:
@@ -315,5 +312,8 @@ def logging_data_queue(
 
 
 if __name__ == "__main__":
-    with logging_diag_hdf(quts_client("BST MEMS Sensor Driver Test").getDeviceManager(), r'C:\SeeTests\aaa.hdf'):
+    with logging_diag_hdf(
+        quts_client("BST MEMS Sensor Driver Test").getDeviceManager(),
+        r'C:\SeeTests\aaa.hdf',
+    ):
         time.sleep(10)

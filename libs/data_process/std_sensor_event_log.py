@@ -191,6 +191,9 @@ class SeeDrvLog:
             m = re.match(pattern, csv_name)
             return True if m else False
 
+    def check_data_length(self):
+        pass
+
     def check_odr(self, ignore_min=False, ignore_max=False):
         col_name = 'interval'
         intv = calc_interval_ms(self.odr)

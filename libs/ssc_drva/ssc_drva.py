@@ -71,7 +71,7 @@ class SscDrvaTest(object):
             cmd_list.append('-debug')
         return cmd_list
 
-    def ssc_drva_run(self, cmd_list, stdout_en=True):
+    def ssc_drva_run(self, cmd_list, stdout_en=False):
         out = sys.stdout if stdout_en else PIPE
         # logging.info(f'\nexecute {" ".join(cmd_list)}')
         timeout = 600  # 10 minutes timeout

@@ -38,6 +38,7 @@ def datetime_str():
 
 def sensor_info_list():
     sensor_info_text = adb.adb_sensor_info()
+
     def produce_var(string):
         try:
             var = eval(string)
@@ -59,10 +60,16 @@ def sensor_info_list():
         except ValueError:
             continue
     # hw_ids = [sensor_info['HW_ID'] for sensor_info in sensor_info_list if sensor_info.get('HW_ID', None) is not None]
-    sensor_info_list = [sensor_info for sensor_info in sensor_info_list if
-                        sensor_info.get('VENDOR', '').lower() == 'bosch']
-    sensor_info_list = [sensor_info for sensor_info in sensor_info_list if
-                        sensor_info.get('TYPE', '').lower() in sensor_collections]
+    sensor_info_list = [
+        sensor_info
+        for sensor_info in sensor_info_list
+        if sensor_info.get('VENDOR', '').lower() == 'bosch'
+    ]
+    sensor_info_list = [
+        sensor_info
+        for sensor_info in sensor_info_list
+        if sensor_info.get('TYPE', '').lower() in sensor_collections
+    ]
     return sensor_info_list
 
 

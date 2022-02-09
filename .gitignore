@@ -11,3 +11,4 @@ build/
 dist/
 testcases/QualcommSeeDriverTests/sensorinfo.txt
 testcases/QualcommSeeDriverTests/report.html
+testcases/QualcommSeeDriverTests/reports/
