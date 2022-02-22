@@ -6,10 +6,12 @@
 __filename__ = "try"
 __version__ = "init"
 __author__ = "@henry.fan"
+
 import os
 import sys
 from pprint import pp
 from libs.adb.adb import ADB
+
 print(os.path.dirname(__file__))
 
 sensor_collections = ('accel', 'gyro', 'mag')
@@ -43,38 +45,68 @@ def get_ranges(l: list):
         return []
 
 
-l = [[-4.36332, 4.36332],
-     [-8.72664, 8.72664],
-     [-17.453279, 17.453279],
-     [-34.906559, 34.906559]]
+l = [
+    [-4.36332, 4.36332],
+    [-8.72664, 8.72664],
+    [-17.453279, 17.453279],
+    [-34.906559, 34.906559],
+]
 ranges = get_ranges(l)
 
-
 if __name__ == "__main__":
-    # print(sys.argv)
-    adb = ADB()
-    sensor_info_text = adb.adb_sensor_info()
-    # ftxt = r'C:\Users\FNH1SGH\Desktop\sensor_info.txt'
-    sensor_info_list = list()
-    # with open(ftxt, 'r') as f:
-    #     line = f.readline()
-    sensor_info = dict()
-    for line in sensor_info_text.splitlines():
-        if line.startswith('SUID') and sensor_info:
-            # if sensor_info:
-            sensor_info_list.append(sensor_info)
-            sensor_info = dict()
-        try:
-            k, v = [s.strip() for s in line.split('=') if line.count('=') == 1]
-            sensor_info.update({produce_var(k): produce_var(v)})
+    # # print(sys.argv)
+    # adb = ADB()
+    # sensor_info_text = adb.adb_sensor_info()
+    # # ftxt = r'C:\Users\FNH1SGH\Desktop\sensor_info.txt'
+    # sensor_info_list = list()
+    # # with open(ftxt, 'r') as f:
+    # #     line = f.readline()
+    # sensor_info = dict()
+    # for line in sensor_info_text.splitlines():
+    #     if line.startswith('SUID') and sensor_info:
+    #         # if sensor_info:
+    #         sensor_info_list.append(sensor_info)
+    #         sensor_info = dict()
+    #     try:
+    #         k, v = [s.strip() for s in line.split('=') if line.count('=') == 1]
+    #         sensor_info.update({produce_var(k): produce_var(v)})
+    #
+    #     except ValueError as e:
+    #         continue
+    #     # line = f.readline()
+    # sensor_info_list = [sensor_info for sensor_info in sensor_info_list if sensor_info.get('VENDOR', '').lower() == 'bosch']
+    # sensor_info_list = [sensor_info for sensor_info in sensor_info_list if sensor_info.get('TYPE', '').lower() in sensor_collections]
+    #
+    # # sensor_info = sensor_info_lines
+    # pp(sensor_info_list)
+    # l = []
+    # l.sort()
+    # coding: utf-8
 
-        except ValueError as e:
-            continue
-        # line = f.readline()
-    sensor_info_list = [sensor_info for sensor_info in sensor_info_list if sensor_info.get('VENDOR', '').lower() == 'bosch']
-    sensor_info_list = [sensor_info for sensor_info in sensor_info_list if sensor_info.get('TYPE', '').lower() in sensor_collections]
+    # 多线程join
 
-    # sensor_info = sensor_info_lines
-    pp(sensor_info_list)
-    l = []
-    l.sort()
+    import threading, time
+
+    def doWaiting1():
+        print('start waiting1: ' + time.strftime('%H:%M:%S') + "\n")
+        time.sleep(3)
+        print('stop waiting1: ' + time.strftime('%H:%M:%S') + "\n")
+
+    def doWaiting2():
+        print('start waiting2: ' + time.strftime('%H:%M:%S') + "\n")
+        time.sleep(8)
+        print('stop waiting2: ', time.strftime('%H:%M:%S') + "\n")
+
+    tsk = []
+    thread1 = threading.Thread(target=doWaiting1)
+    thread1.start()
+    tsk.append(thread1)
+    thread2 = threading.Thread(target=doWaiting2)
+    thread2.start()
+    tsk.append(thread2)
+    print('start join: ' + time.strftime('%H:%M:%S') + "\n")
+
+    for tt in tsk:
+        tt.join()
+
+    print('end join: ' + time.strftime('%H:%M:%S') + "\n")

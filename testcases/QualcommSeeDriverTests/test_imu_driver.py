@@ -27,7 +27,7 @@ using_ssc_drva_keys = [
 driver_msg_log_headers = ['Timestamp', 'Name', 'Message']
 
 
-def verify_fac_test_result(fac_test, diag_packets_list):
+def found_pass_in_log(fac_test, diag_packets_list):
     re_pattern = rf'Test level {fac_test}: PASS'
     for diag_packets in diag_packets_list:
         if re.search(re_pattern, diag_packets.summaryText):
@@ -35,48 +35,87 @@ def verify_fac_test_result(fac_test, diag_packets_list):
             break
     else:
         found = False
+    return found
+    # with pytest.assume:
+    #     assert found, f"key word f'Test level {fac_test}: PASS' not found "
+
+
+def bias_ver_updated(prev_biasvals, post_bias):
     with pytest.assume:
-        assert found, f"key word f'Test level {fac_test}: PASS' not found "
+        return [pre + 1 for pre in prev_biasvals] == list(post_bias)
 
 
-def verify_calib_bias(prev_biasvals, post_bias):
-    with pytest.assume:
-        assert [pre + 1 for pre in prev_biasvals] == list(
-            post_bias
-        ), f"bias values [x, y, z]: {prev_biasvals} is not updated after calibration"
+# def odr_in_range(log_obj, ignore_min=False, ignore_max=False):
+#     col_name = 'interval'
+#     intv = std_sensor_event_log.calc_interval_ms(log_obj.odr)
+#     l_limit = 0 * intv if not ignore_min else -float('inf')
+#     h_limit = 1.8 * intv if not ignore_max else float('inf')
+#     intv_min = log_obj.stats[col_name]['min']
+#     intv_max = log_obj.stats[col_name]['max']
+#     assert (
+#             l_limit
+#             <= log_obj.stats[col_name]['min']
+#             < log_obj.stats[col_name]['max']
+#             < h_limit
+#     ), f'{log_obj.sensor} time interval [{intv_min}, {intv_max}] data out of range [{l_limit} {h_limit}] in <{os.path.relpath(log_obj.csv_file)}>'
 
 
-def verify_stream_test_result(
-    hdf_file, qseevt_open, ignore_odr_min=False, ignore_odr_max=False,
+def verify_csv_data(
+    csv_log, ignore_odr_min=False, ignore_odr_max=False,
 ):
-    csv_logs = qseevt_open.parse_hdf_to_csv(hdf_file)
-    assert csv_logs, f'No csv files is parsed from hdf: {hdf_file}'
-    for csv_log in csv_logs:
-        log_obj = std_sensor_event_log.SeeDrvLog(csv_log, skip_data=1)
-        sensor_name = log_obj.sensor
-        if not log_obj.odr or log_obj.dest_sensor != 'da_test':
-            continue
 
+    log_obj = std_sensor_event_log.SeeDrvLog(csv_log, skip_data=1)
+    if not log_obj.odr or log_obj.dest_sensor != 'da_test':
+        return
+
+    with pytest.assume:
+        log_obj.odr_in_range(ignore_min=ignore_odr_min, ignore_max=ignore_odr_max)
+    for axis in std_sensor_event_log.axises:
+        col_name = f'{log_obj.sensor.capitalize()} {axis.upper()} ({log_obj.unit})'
         with pytest.assume:
-            log_obj.check_odr(ignore_min=ignore_odr_min, ignore_max=ignore_odr_max)
-        for axis in std_sensor_event_log.axises:
-            col_name = f'{sensor_name.capitalize()} {axis.upper()} ({log_obj.unit})'
-            with pytest.assume:
-                log_obj.check_data_range(col_name, axis)
-            with pytest.assume:
-                log_obj.check_data_stddev(col_name, axis)
-        if sensor_name == cfg.Sensor.mag.value:
-            with pytest.assume:
-                col_names = [
-                    f'{sensor_name.capitalize()} {axis.upper()} ({log_obj.unit})'
-                    for axis in std_sensor_event_log.axises
-                ]
-                log_obj.check_norm_ord(*col_names)
+            log_obj.check_data_range(col_name, axis)
+        with pytest.assume:
+            log_obj.check_data_stddev(col_name, axis)
+    if log_obj.sensor == cfg.Sensor.mag.value:
+        with pytest.assume:
+            col_names = [
+                f'{log_obj.sensor.capitalize()} {axis.upper()} ({log_obj.unit})'
+                for axis in std_sensor_event_log.axises
+            ]
+            log_obj.check_norm_ord(*col_names)
 
 
-# @pytest.mark.usefixtures('reset_origin_registry')
-# @pytest.mark.usefixtures('change_registry_res_value')
+@pytest.mark.usefixtures('reset_origin_registry')
+@pytest.mark.usefixtures('change_registry_res_value')
 class TestBasicCases:
+    def test_factory_test(
+        self,
+        productname,
+        sensor,
+        factest,
+        hw_id,
+        ssc_drva,
+        quts_diag_service,
+        diag_packets_list,
+    ):
+        dur = 5
+        params = (dict.fromkeys(using_ssc_drva_keys), None)
+        params[0].update(
+            {'sensor': sensor, 'factory_test': factest, 'duration': dur, 'hw_id': hw_id}
+        )
+        prev_biasvals = utils.imu_bias_values(productname, sensor)
+        with quts.logging_data_queue(quts_diag_service, diag_packets_list):
+            ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(params)
+            ssc_drva.ssc_drva_run(ssc_drva_cmd)
+        post_biasvals = utils.imu_bias_values(productname, sensor)
+        assert found_pass_in_log(
+            factest, diag_packets_list
+        ), f"key word f'Test level {factest}: PASS' not found "
+        if factest == 2:
+            assert bias_ver_updated(
+                prev_biasvals, post_biasvals
+            ), f"bias values [x, y, z]: {prev_biasvals} is not updated after calibration"
+
     def test_data_streaming(
         self,
         sensor,
@@ -101,31 +140,10 @@ class TestBasicCases:
         ):
             ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(params)
             ssc_drva.ssc_drva_run(ssc_drva_cmd)
-        verify_stream_test_result(hdflogfile, qseevt_app)
-
-    def test_factory_test(
-        self,
-        productname,
-        sensor,
-        factest,
-        hw_id,
-        ssc_drva,
-        quts_diag_service,
-        diag_packets_list,
-    ):
-        dur = 5
-        params = (dict.fromkeys(using_ssc_drva_keys), None)
-        params[0].update(
-            {'sensor': sensor, 'factory_test': factest, 'duration': dur, 'hw_id': hw_id}
-        )
-        prev_biasvals = utils.imu_bias_values(productname, sensor)
-        with quts.logging_data_queue(quts_diag_service, diag_packets_list):
-            ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(params)
-            ssc_drva.ssc_drva_run(ssc_drva_cmd)
-        post_biasvals = utils.imu_bias_values(productname, sensor)
-        verify_fac_test_result(factest, diag_packets_list)
-        if factest == 2:
-            verify_calib_bias(prev_biasvals, post_biasvals)
+        csv_logs = qseevt_app.parse_hdf_to_csv(hdflogfile)
+        assert csv_logs, f'No csv files is parsed from hdf: {hdflogfile}'
+        for csv_log in csv_logs:
+            verify_csv_data(csv_log)
 
 
 def test_internal_concurrency_stream(
@@ -161,7 +179,10 @@ def test_internal_concurrency_stream(
     ):
         ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(params)
         ssc_drva.ssc_drva_run(ssc_drva_cmd)
-    verify_stream_test_result(hdflogfile, qseevt_app)
+    csv_logs = qseevt_app.parse_hdf_to_csv(hdflogfile)
+    assert csv_logs, f'No csv files is parsed from hdf: {hdflogfile}'
+    for csv_log in csv_logs:
+        verify_csv_data(csv_log)
 
 
 def test_internal_concurrency_factest(
@@ -201,10 +222,17 @@ def test_internal_concurrency_factest(
         ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(params)
         ssc_drva.ssc_drva_run(ssc_drva_cmd)
     post_biasvals = utils.imu_bias_values(productname, sensor)
-    verify_fac_test_result(factest, diag_packets_list)
+    assert found_pass_in_log(
+        factest, diag_packets_list
+    ), f"key word f'Test level {factest}: PASS' not found "
     if factest == 2:
-        verify_calib_bias(prev_biasvals, post_biasvals)
-    verify_stream_test_result(hdflogfile, qseevt_app, ignore_odr_max=True)
+        assert bias_ver_updated(
+            prev_biasvals, post_biasvals
+        ), f"bias values [x, y, z]: {prev_biasvals} is not updated after calibration"
+    csv_logs = qseevt_app.parse_hdf_to_csv(hdflogfile)
+    assert csv_logs, f'No csv files is parsed from hdf: {hdflogfile}'
+    for csv_log in csv_logs:
+        verify_csv_data(csv_log, ignore_odr_max=True)
 
 
 def test_external_concurrency(
@@ -246,7 +274,10 @@ def test_external_concurrency(
     ):
         ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(params)
         ssc_drva.ssc_drva_run(ssc_drva_cmd)
-    verify_stream_test_result(hdflogfile, qseevt_app)
+    csv_logs = qseevt_app.parse_hdf_to_csv(hdflogfile)
+    assert csv_logs, f'No csv files is parsed from hdf: {hdflogfile}'
+    for csv_log in csv_logs:
+        verify_csv_data(csv_log)
 
 
 def test_dual_hw(
@@ -289,4 +320,7 @@ def test_dual_hw(
     ):
         ssc_drva_cmd = ssc_drva.set_ssc_drva_cmd(params)
         ssc_drva.ssc_drva_run(ssc_drva_cmd)
-    verify_stream_test_result(hdflogfile, qseevt_app)
+    csv_logs = qseevt_app.parse_hdf_to_csv(hdflogfile)
+    assert csv_logs, f'No csv files is parsed from hdf: {hdflogfile}'
+    for csv_log in csv_logs:
+        verify_csv_data(csv_log)

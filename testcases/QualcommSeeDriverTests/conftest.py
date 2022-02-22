@@ -22,184 +22,6 @@ from libs.adb.adb import ADB
 from libs.ssc_drva.ssc_drva import SscDrvaTest
 
 sensor_info_list = utils.sensor_info_list()
-test_path_root = r'C:\SeeTests'
-# ll = [
-#     #   {'SUID': 45140206676225902424422602651988808301,
-#     # 'NAME': 'bmi263',
-#     # 'VENDOR': 'BOSCH',
-#     # 'TYPE': 'mag',
-#     # 'AVAILABLE': 'true',
-#     # 'VERSION': '1.1.37',
-#     # 'API': 'sns_mag.proto',
-#     # 'RATES': [25.0, 50.0, 100.0],
-#     # 'RESOLUTIONS': 0.3,
-#     # 'RANGES': [-1300.0, 1300.0],
-#     # 'DRI': 'true',
-#     # 'FIFO_SIZE': 146,
-#     # 'STREAM_TYPE': 'streaming',
-#     # 'STREAM_SYNC': 'false',
-#     # 'DYNAMIC': 'false',
-#     # 'EVENT_SIZE': 16,
-#     # 'OP_MODES': '[LPM, NORMAL, OFF]',
-#     # 'HW_ID': 0,
-#     # 'RIGID_BODY': 'display',
-#     # 'PLACEMENT': [0.1, 0.1, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-#     # 'PHYSICAL_SENSOR': 'true',
-#     # 'PHYSICAL_SENSOR_TESTS': [3, 1],
-#     # 'SELECTED_RESOLUTION': 0.3,
-#     # 'SELECTED_RANGE': [-1300.0, 1300.0]},
-#     {
-#         'SUID': 131046396229003214259151716237223825521,
-#         'NAME': 'bmi263',
-#         'VENDOR': 'BOSCH',
-#         'TYPE': 'gyro',
-#         'AVAILABLE': 'true',
-#         'VERSION': '1.1.37',
-#         'API': 'sns_gyro.proto',
-#         'RATES': [25.0, 50.0, 100.0, 200.0, 400.0],
-#         'RESOLUTIONS': [0.000133, 0.000266, 0.000533, 0.001065],
-#         'RANGES': [
-#             [-4.36332, 4.36332],
-#             [-8.72664, 8.72664],
-#             [-17.453279, 17.453279],
-#             [-34.906559, 34.906559],
-#         ],
-#         'DRI': 'true',
-#         'FIFO_SIZE': 146,
-#         'STREAM_TYPE': 'streaming',
-#         'STREAM_SYNC': 'false',
-#         'DYNAMIC': 'false',
-#         'EVENT_SIZE': 16,
-#         'OP_MODES': '[LPM, NORMAL, OFF]',
-#         'ACTIVE_CURRENT': [6, 900, 900],
-#         'SLEEP_CURRENT': 6,
-#         'HW_ID': 0,
-#         'RIGID_BODY': 'display',
-#         'PLACEMENT': [0.1, 0.1, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-#         'PHYSICAL_SENSOR': 'true',
-#         'PHYSICAL_SENSOR_TESTS': [3, 2, 1],
-#         'SELECTED_RESOLUTION': 0.001065,
-#         'SELECTED_RANGE': [-34.906559, 34.906559],
-#     },
-#     {
-#         'SUID': 317125108042284131473205661129850952667,
-#         'NAME': 'bmi263',
-#         'VENDOR': 'BOSCH',
-#         'TYPE': 'accel',
-#         'AVAILABLE': 'true',
-#         'VERSION': '1.1.37',
-#         'API': 'sns_accel.proto',
-#         'RATES': [25.0, 50.0, 100.0, 200.0, 400.0],
-#         'RESOLUTIONS': [0.000598, 0.001196, 0.002393, 0.004786],
-#         'RANGES': [
-#             [-19.6133, 19.6133],
-#             [-39.226601, 39.226601],
-#             [-78.453201, 78.453201],
-#             [-156.906403, 156.906403],
-#         ],
-#         'DRI': 'true',
-#         'FIFO_SIZE': 146,
-#         'STREAM_TYPE': 'streaming',
-#         'STREAM_SYNC': 'false',
-#         'DYNAMIC': 'false',
-#         'EVENT_SIZE': 16,
-#         'OP_MODES': '[LPM, NORMAL, OFF]',
-#         'ACTIVE_CURRENT': [6, 180, 6],
-#         'SLEEP_CURRENT': 6,
-#         'HW_ID': 0,
-#         'RIGID_BODY': 'display',
-#         'PLACEMENT': [0.1, 0.1, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-#         'PHYSICAL_SENSOR': 'true',
-#         'PHYSICAL_SENSOR_TESTS': [3, 2, 1],
-#         'SELECTED_RESOLUTION': 0.004786,
-#         'SELECTED_RANGE': [-156.906403, 156.906403],
-#     },
-#     #  {'SUID': 45140206676225902424422602651988808301,
-#     #  'NAME': 'bmi263',
-#     #  'VENDOR': 'BOSCH',
-#     #  'TYPE': 'mag',
-#     #  'AVAILABLE': 'true',
-#     #  'VERSION': '1.1.37',
-#     #  'API': 'sns_mag.proto',
-#     #  'RATES': [25.0, 50.0, 100.0],
-#     #  'RESOLUTIONS': 0.3,
-#     #  'RANGES': [-1300.0, 1300.0],
-#     #  'DRI': 'true',
-#     #  'FIFO_SIZE': 146,
-#     #  'STREAM_TYPE': 'streaming',
-#     #  'STREAM_SYNC': 'false',
-#     #  'DYNAMIC': 'false',
-#     #  'EVENT_SIZE': 16,
-#     #  'OP_MODES': '[LPM, NORMAL, OFF]',
-#     #  'HW_ID': 1,
-#     #  'RIGID_BODY': 'display',
-#     #  'PLACEMENT': [0.1, 0.1, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-#     #  'PHYSICAL_SENSOR': 'true',
-#     #  'PHYSICAL_SENSOR_TESTS': [3, 1],
-#     #  'SELECTED_RESOLUTION': 0.3,
-#     #  'SELECTED_RANGE': [-1300.0, 1300.0]},
-#     #
-#     # {'SUID': 131046396229003214259151716237223825521,
-#     #  'NAME': 'bmi263',
-#     #  'VENDOR': 'BOSCH',
-#     #  'TYPE': 'gyro',
-#     #  'AVAILABLE': 'true',
-#     #  'VERSION': '1.1.37',
-#     #  'API': 'sns_gyro.proto',
-#     #  'RATES': [25.0, 50.0, 100.0, 200.0, 400.0],
-#     #  'RESOLUTIONS': [0.000133, 0.000266, 0.000533, 0.001065],
-#     #  'RANGES': [[-4.36332, 4.36332],
-#     #             [-8.72664, 8.72664],
-#     #             [-17.453279, 17.453279],
-#     #             [-34.906559, 34.906559]],
-#     #  'DRI': 'true',
-#     #  'FIFO_SIZE': 146,
-#     #  'STREAM_TYPE': 'streaming',
-#     #  'STREAM_SYNC': 'false',
-#     #  'DYNAMIC': 'false',
-#     #  'EVENT_SIZE': 16,
-#     #  'OP_MODES': '[LPM, NORMAL, OFF]',
-#     #  'ACTIVE_CURRENT': [6, 900, 900],
-#     #  'SLEEP_CURRENT': 6,
-#     #  'HW_ID': 1,
-#     #  'RIGID_BODY': 'display',
-#     #  'PLACEMENT': [0.1, 0.1, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-#     #  'PHYSICAL_SENSOR': 'true',
-#     #  'PHYSICAL_SENSOR_TESTS': [3, 2, 1],
-#     #  'SELECTED_RESOLUTION': 0.001065,
-#     #  'SELECTED_RANGE': [-34.906559, 34.906559]},
-#     #
-#     # {'SUID': 317125108042284131473205661129850952667,
-#     #  'NAME': 'bmi263',
-#     #  'VENDOR': 'BOSCH',
-#     #  'TYPE': 'accel',
-#     #  'AVAILABLE': 'true',
-#     #  'VERSION': '1.1.37',
-#     #  'API': 'sns_accel.proto',
-#     #  'RATES': [25.0, 50.0, 100.0, 200.0, 400.0],
-#     #  'RESOLUTIONS': [0.000598, 0.001196, 0.002393, 0.004786],
-#     #  'RANGES': [[-19.6133, 19.6133],
-#     #             [-39.226601, 39.226601],
-#     #             [-78.453201, 78.453201],
-#     #             [-156.906403, 156.906403]],
-#     #  'DRI': 'true',
-#     #  'FIFO_SIZE': 146,
-#     #  'STREAM_TYPE': 'streaming',
-#     #  'STREAM_SYNC': 'false',
-#     #  'DYNAMIC': 'false',
-#     #  'EVENT_SIZE': 16,
-#     #  'OP_MODES': '[LPM, NORMAL, OFF]',
-#     #  'ACTIVE_CURRENT': [6, 180, 6],
-#     #  'SLEEP_CURRENT': 6,
-#     #  'HW_ID': 1,
-#     #  'RIGID_BODY': 'display',
-#     #  'PLACEMENT': [0.1, 0.1, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-#     #  'PHYSICAL_SENSOR': 'true',
-#     #  'PHYSICAL_SENSOR_TESTS': [3, 2, 1],
-#     #  'SELECTED_RESOLUTION': 0.004786,
-#     #  'SELECTED_RANGE': [-156.906403, 156.906403]}
-# ]
-# sensor_info_list = ll
 
 fdmc = os.path.join(os.path.dirname(__file__), 'mydmc.dmc')
 extra_odrs = [-3.0, -3.1, -3.2]
@@ -210,15 +32,6 @@ sensor_factest_dur = 5
 ssc_drva_delay = 2
 null_params = [None]
 test_result_root_dir = r'c:\SeeTests'
-
-# res_squence = [
-#     {cfg.Sensor.acc.value: 0, cfg.Sensor.gyr.value: 1, cfg.Sensor.mag.value: 1},
-#     {cfg.Sensor.acc.value: 1, cfg.Sensor.gyr.value: 2, cfg.Sensor.mag.value: 2},
-#     {cfg.Sensor.acc.value: 2, cfg.Sensor.gyr.value: 3, cfg.Sensor.mag.value: 3},
-#     {cfg.Sensor.acc.value: 3, cfg.Sensor.gyr.value: 4, cfg.Sensor.mag.value: 4},
-# ]
-
-driver_msg_log_headers = ['Timestamp', 'Name', 'Message']
 
 
 def pytest_addoption(parser):
@@ -234,12 +47,6 @@ def pytest_addoption(parser):
         default="hdk8350",
         help="qualcomm dev board, default=hdk8350",
     )
-    # parser.addoption(
-    #     "--test_dir",
-    #     action="store",
-    #     default=os.path.join(r'C:\SeeTests', f''),
-    #     help="Customize an location to save test report logs",
-    # )
 
 
 def resvalue_id_str(registry_dict):
@@ -395,7 +202,6 @@ def pytest_generate_tests(metafunc):
             )
 
     if "change_registry_res_value" in metafunc.fixturenames:
-        range_vals = []
         sensors = set()
         for sensor_info in sensor_info_list:
             sensors.add(sensor_info['TYPE'])
@@ -409,9 +215,7 @@ def pytest_generate_tests(metafunc):
             if sensor == 'mag':
                 ranges.append([0] * 4)
         rvs = list(zip(*ranges))
-
         range_vals = [dict(zip(sensors, t)) for t in rvs]
-
         metafunc.parametrize(
             'change_registry_res_value',
             range_vals,
@@ -439,10 +243,17 @@ def isadmin():
 
 
 @pytest.fixture(scope='session', autouse=True)
-def test_dir(productname):
-    test_dir = os.path.join(
-        test_path_root, f'test_{productname}_{utils.datetime_str()}'
-    )
+def test_dir(productname, request):
+
+    if request.config.getoption("--html"):
+        fhtml = request.config.getoption("--html")
+        test_dir = os.path.dirname(os.path.abspath(fhtml))
+        # test_dir = os.path.join(test_dir, f'test_{productname}_{utils.datetime_str()}')
+    else:
+        test_path_root = r'C:\SeeTests'
+        test_dir = os.path.join(
+            test_path_root, f'test_{productname}_{utils.datetime_str()}'
+        )
     os.makedirs(test_dir, exist_ok=True)
     yield test_dir
 
@@ -457,7 +268,7 @@ def log_path(test_dir):
 @pytest.fixture(autouse=True)
 def log_file_name(log_path, request):
     file_name = f"{request.node.name}"
-    if request.cls.__name__:
+    if request.cls:
         file_name = f'{request.cls.__name__}-{file_name}'
     yield file_name
 
@@ -483,7 +294,7 @@ def ssc_drva(adb):
 
 @pytest.fixture(scope="package")
 def quts_client():
-    client = quts.quts_client("BST MEMS Sensor Driver Test")
+    client = quts.quts_client("BST MEMS Sensor Driver Autotest")
     yield client
     client.stop()
     del client
@@ -575,15 +386,17 @@ def diag_packets_list(quts_diag_service):
         quts_diag_service, queue_name=queuename
     )
     if error_code != 0:
-        pytest.exit("Error  creating data queue error code: {error_code}")
-    diag_packets_list = []
+        pytest.exit(f"Error  creating data queue error code: {error_code}")
+    diag_packets_list = list()
     yield diag_packets_list
+    quts_diag_service.removeDataQueue(queuename)
     del diag_packets_list
 
 
 @pytest.fixture(autouse=True)
 def save_drv_msglog(log_path, log_file_name, diag_packets_list):
     yield
+    driver_msg_log_headers = ['Timestamp', 'Name', 'Message']
     drv_log_file = os.path.join(log_path, f'{log_file_name}.csv')
     with open(drv_log_file, 'w', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=driver_msg_log_headers)

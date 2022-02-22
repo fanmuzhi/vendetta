@@ -102,7 +102,9 @@ class SeeDrvLog:
                 else:
                     return row - 1
             else:
-                raise RuntimeError(f'no data header row found in {self.csv_file}')
+                raise RuntimeError(
+                    f'no data header row found in {os.path.relpath(self.csv_file)}'
+                )
 
     def get_sensor(self):
         return self.info_df.loc['#Sensor'].iat[0]
@@ -113,11 +115,12 @@ class SeeDrvLog:
         )
 
     def get_info_odr(self):
-        odr_text_pattern = r'{ sample_rate : (\d+\.\d+) }'
-        match = re.search(odr_text_pattern, self.info_df.loc['#Request'].iat[0])
-        if match:
-            return calc_actual_odr(float(match.groups()[0]))
-        else:
+        try:
+            odr_text_pattern = r'{ sample_rate : (\d+\.\d+) }'
+            match = re.search(odr_text_pattern, self.info_df.loc['#Request'].iat[0])
+            if match:
+                return calc_actual_odr(float(match.groups()[0]))
+        except KeyError:
             return None
 
     def get_info_dest_sensor(self):
@@ -194,7 +197,7 @@ class SeeDrvLog:
     def check_data_length(self):
         pass
 
-    def check_odr(self, ignore_min=False, ignore_max=False):
+    def odr_in_range(self, ignore_min=False, ignore_max=False):
         col_name = 'interval'
         intv = calc_interval_ms(self.odr)
         l_limit = 0 * intv if not ignore_min else -float('inf')
@@ -206,7 +209,7 @@ class SeeDrvLog:
             <= self.stats[col_name]['min']
             < self.stats[col_name]['max']
             < h_limit
-        ), f'{self.sensor} time interval [{intv_min}, {intv_max}] data out of range [{l_limit} {h_limit}] in <{self.csv_file}>'
+        ), f'{self.sensor} time interval [{intv_min}, {intv_max}] data out of range [{l_limit} {h_limit}] in <{os.path.relpath(self.csv_file)}>'
 
     def check_data_range(self, col_name, axis):
         # col_name = f'{self.sensor.capitalize()} {axis.upper()} ({self.unit})'
@@ -215,7 +218,7 @@ class SeeDrvLog:
         data_min, data_max = self.stats[col_name]['min'], self.stats[col_name]['max']
         assert (
             l_limit <= data_min <= data_max <= h_limit
-        ), f"{col_name} data [{data_min}, {data_max}] out of range [{l_limit}, {h_limit}] in {self.csv_file}"
+        ), f"{col_name} data [{data_min}, {data_max}] out of range [{l_limit}, {h_limit}] in {os.path.relpath(self.csv_file)}"
 
     def check_data_stddev(self, col_name, axis):
         stddev = self.stats[col_name]['std']
@@ -224,14 +227,14 @@ class SeeDrvLog:
         h_limit = stddev_limits[self.sensor][axis]
         assert (
             l_limit < stddev < h_limit
-        ), f"{col_name} standard deviation {stddev} exceeds limit [{l_limit}, {h_limit}] in {self.csv_file}"
+        ), f"{col_name} standard deviation {stddev} exceeds limit [{l_limit}, {h_limit}] in {os.path.relpath(self.csv_file)}"
 
     def check_norm_ord(self, *cols, ord=2):
         norms = np.linalg.norm(self.data_df[list(cols)], ord=ord, axis=1)
         norms_min, norms_max = min(norms), max(norms)
         assert (
             MAG_NORM_LIMIT_L < norms_min <= norms_max <= MAG_NORM_LIMIT_H
-        ), f'{cols} norm [{norms_min, norms_max}] out of range [{MAG_NORM_LIMIT_L, MAG_NORM_LIMIT_H}] in {self.csv_file}'
+        ), f'{cols} norm [{norms_min, norms_max}] out of range [{MAG_NORM_LIMIT_L, MAG_NORM_LIMIT_H}] in {os.path.relpath(self.csv_file)}'
 
 
 if __name__ == '__main__':

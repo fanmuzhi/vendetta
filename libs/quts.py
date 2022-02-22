@@ -283,32 +283,11 @@ def logging_diag_hdf(dev_mgr: DeviceManager.DeviceManager.Client, hdf_file):
 
 @contextlib.contextmanager
 def logging_data_queue(diag_service, diag_packets_list, queue_name='data'):
-    # items = dict()
-    # items[Common.ttypes.DiagPacketType.LOG_PACKET] = log_packet_filter_item
-    # items[Common.ttypes.DiagPacketType.EVENT] = event_filter_item
-    # items[Common.ttypes.DiagPacketType.DEBUG_MSG] = debug_msg_filter_item
-    # create_data_queue_for_monitoring(diag_service, items, 'data')
-    # diag_service.createDataQueue(queue_name, diag_packet_filter, return_obj_diag)
-    queuename = queue_name
-    # error_code = create_data_queue_for_monitoring(
-    #     diag_service, queue_name=queuename
-    # )
-    # if error_code != 0:
-    #     sys.exit("Error  creating data queue error code: {error_code}")
-    # # diag_packets_list = []
     yield diag_packets_list
-    diag_packets = diag_service.getDataQueueItems(queuename, 1, 20)
+    diag_packets = diag_service.getDataQueueItems(queue_name, 1, 20)
     while diag_packets:
         diag_packets_list.append(diag_packets[0])
-        diag_packets = diag_service.getDataQueueItems(queuename, 1, 20)
-
-    diag_service.removeDataQueue(queuename)
-
-    # for diag_packet in diag_packets:
-    #     if diag_packet.packetId == '125/1':
-    #         print(diag_packet.summaryText)
-
-    # diag_service.removeDataQueue(queue_name)
+        diag_packets = diag_service.getDataQueueItems(queue_name, 1, 20)
 
 
 if __name__ == "__main__":

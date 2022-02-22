@@ -70,6 +70,10 @@ def sensor_info_list():
         for sensor_info in sensor_info_list
         if sensor_info.get('TYPE', '').lower() in sensor_collections
     ]
+    sensor_order = [sensor.value for sensor in cfg.Sensor]
+    sensor_info_list = sorted(
+        sensor_info_list, key=lambda item: sensor_order.index(item["TYPE"])
+    )
     return sensor_info_list
 
 
@@ -119,21 +123,6 @@ def log_file_name(params_sets):
     log_time = f'{datetime.now().strftime(datetime_format)}'
     log_name = f'{log_time}_{log_name}'
     return log_name
-
-
-def valid_csv_name(csv_name):
-    if os.path.splitext(csv_name)[1] != '.csv':
-        return False
-    elif (
-        'resampler' in csv_name.lower() or '[std_sensor_event]' not in csv_name.lower()
-    ):
-        return False
-    else:
-        pattern = (
-            r'^SensorAPI_([A-Z|a-z]+)_S\d+_I\d+_D\d+_R\d+_\[std_sensor_event\].csv'
-        )
-        m = re.match(pattern, csv_name)
-        return True if m else False
 
 
 def imu_bias_values(productname, sensor):

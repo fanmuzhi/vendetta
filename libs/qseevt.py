@@ -216,6 +216,19 @@ class Qseevt(object):
         # return richedit_content
 
     def parse_hdf_to_csv(self, hdflogfile):
+        def valid_csv_name(csv_name):
+            if os.path.splitext(csv_name)[1] != '.csv':
+                return False
+            elif (
+                'resampler' in csv_name.lower()
+                or '[std_sensor_event]' not in csv_name.lower()
+            ):
+                return False
+            else:
+                pattern = r'^SensorAPI_([A-Z|a-z]+)_S\d+_I\d+_D\d+_R\d+_\[std_sensor_event\].csv'
+                m = re.match(pattern, csv_name)
+                return True if m else False
+
         self.set_hdffile_text(hdflogfile)
         self.run_log_analysis()
         while not self.analyze_complete():
