@@ -74,8 +74,8 @@ class Odr(Enum):
     odr_max = -1
     odr_min = -2
     odr_sweep_ascend = -3.0
-    odr_sweep_random = -3.2
     odr_sweep_descend = -3.1
+    odr_sweep_random = -3.2
     odr_random = -4
 
 

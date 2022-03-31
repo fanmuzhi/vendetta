@@ -29,13 +29,10 @@ driver_msg_log_headers = ['Timestamp', 'Name', 'Message']
 
 def found_pass_in_log(fac_test, diag_packets_list):
     re_pattern = rf'Test level {fac_test}: PASS'
-    for diag_packets in diag_packets_list:
-        if re.search(re_pattern, diag_packets.summaryText):
-            found = True
-            break
-    else:
-        found = False
-    return found
+    return any(
+        re.search(re_pattern, diag_packets.summaryText)
+        for diag_packets in diag_packets_list
+    )
     # with pytest.assume:
     #     assert found, f"key word f'Test level {fac_test}: PASS' not found "
 

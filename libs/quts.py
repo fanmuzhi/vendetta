@@ -202,42 +202,49 @@ def set_all_callbacks(quts_client_obj):
 
 
 def get_device_handle(device_manager):
-    device_handle = None
-    # handle_list = device_manager.getDevicesForService(DiagService.constants.DIAG_SERVICE_NAME)
-    for item in device_manager.getDeviceList():
-        if "Qualcomm USB Composite Device" in item.description:
-            device_handle = item.deviceHandle
-            break
-    return device_handle
+    return next(
+        (
+            item.deviceHandle
+            for item in device_manager.getDeviceList()
+            if "Qualcomm USB Composite Device" in item.description
+        ),
+        None,
+    )
 
 
 def get_diag_protocal_handle(device_manager, device_handle):
-    protocol_handle = None
     list_of_protocols = device_manager.getProtocolList(device_handle)
-    for item in list_of_protocols:
-        if "Qualcomm HS-USB Android DIAG" in item.description:
-            protocol_handle = item.protocolHandle
-            break
-    return protocol_handle
+    return next(
+        (
+            item.protocolHandle
+            for item in list_of_protocols
+            if "Qualcomm HS-USB Android DIAG" in item.description
+        ),
+        None,
+    )
 
 
 def create_filters(all_filters):
     diag_packet_filter = Common.ttypes.DiagPacketFilter()
     diag_packet_filter.idOrNameMask = {}
     for packetType in all_filters:
-        list_of_id = []
-        for item_id in all_filters[packetType]:  # for string value create a IdOrName
-            list_of_id.append(Common.ttypes.DiagIdFilterItem(idOrName=item_id))
+        list_of_id = [
+            Common.ttypes.DiagIdFilterItem(idOrName=item_id)
+            for item_id in all_filters[packetType]
+        ]
+
         diag_packet_filter.idOrNameMask[packetType] = list_of_id
     return diag_packet_filter
 
 
 def create_data_queue_for_monitoring(diag_service, queue_name):
     #  Create a data Queue. Reading will be done in the callback.
-    all_filters = dict()
-    all_filters[Common.ttypes.DiagPacketType.LOG_PACKET] = log_packet_filter_item
-    all_filters[Common.ttypes.DiagPacketType.EVENT] = event_filter_item
-    all_filters[Common.ttypes.DiagPacketType.DEBUG_MSG] = debug_msg_filter_item
+    all_filters = {
+        Common.ttypes.DiagPacketType.LOG_PACKET: log_packet_filter_item,
+        Common.ttypes.DiagPacketType.EVENT: event_filter_item,
+        Common.ttypes.DiagPacketType.DEBUG_MSG: debug_msg_filter_item,
+    }
+
     diag_packet_filter = create_filters(all_filters)
 
     return_obj_diag = Common.ttypes.DiagReturnConfig()
@@ -252,10 +259,9 @@ def create_data_queue_for_monitoring(diag_service, queue_name):
         | Common.ttypes.DiagReturnFlags.SUMMARY_TEXT
     )
 
-    error_code = diag_service.createDataQueue(
+    return diag_service.createDataQueue(
         queue_name, diag_packet_filter, return_obj_diag
     )
-    return error_code
 
 
 def update_filters_to_queue(diag_service, all_filters, queue_name, add_or_remove):
@@ -269,7 +275,7 @@ def update_filters_to_queue(diag_service, all_filters, queue_name, add_or_remove
     if error_code != 0:
         print("Error  updating data queue", error_code)
     else:
-        print("Data queue updated with " + add_or_remove)
+        print(f"Data queue updated with {add_or_remove}")
 
 
 @contextlib.contextmanager
@@ -284,10 +290,8 @@ def logging_diag_hdf(dev_mgr: DeviceManager.DeviceManager.Client, hdf_file):
 @contextlib.contextmanager
 def logging_data_queue(diag_service, diag_packets_list, queue_name='data'):
     yield diag_packets_list
-    diag_packets = diag_service.getDataQueueItems(queue_name, 1, 20)
-    while diag_packets:
+    while diag_packets := diag_service.getDataQueueItems(queue_name, 1, 20):
         diag_packets_list.append(diag_packets[0])
-        diag_packets = diag_service.getDataQueueItems(queue_name, 1, 20)
 
 
 if __name__ == "__main__":

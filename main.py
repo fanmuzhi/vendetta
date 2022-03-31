@@ -8,12 +8,11 @@ import pytest
 
 from libs import utils
 
-from pycallgraph import PyCallGraph
-from pycallgraph.output import GraphvizOutput
-from pycallgraph import Config
-from pycallgraph import GlobbingFilter
+# from pycallgraph import PyCallGraph
+# from pycallgraph.output import GraphvizOutput
+# from pycallgraph import Config
+# from pycallgraph import GlobbingFilter
 
-product = ''
 defualt_testpath = r'testcases/QualcommSeeDriverTests/test_imu_driver.py'
 
 default_args = [
@@ -27,12 +26,13 @@ default_args = [
 
 
 def main():
+    # product = ''
     argv = sys.argv[1:]
 
     if not argv[0].replace("\\", "/").startswith(defualt_testpath):
         argv = [defualt_testpath] + argv
 
-    if '--product' not in argv or '--product' == argv[-1]:
+    if '--product' not in argv or argv[-1] == '--product':
         print("argument --product not assigned")
         sys.exit(1)
     else:

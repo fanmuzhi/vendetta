@@ -55,17 +55,21 @@ class SscDrvaTest(object):
         assert 0 < len(param_sets) < 3
 
         p_sets = [SscDrvaParams(**p) for p in param_sets if p]
-        for param, value in p_sets[0].__dict__.items():
-            if value is None:
-                continue
-            cmd_list.append(f'-{param}={value}')
+        cmd_list.extend(
+            f'-{param}={value}'
+            for param, value in p_sets[0].__dict__.items()
+            if value is not None
+        )
+
         if len(p_sets) >= 2:
             cmd_list[0] = '"' + cmd_list[0]
             cmd_list.extend(['&"', '"ssc_drva_test'])
-            for param, value in p_sets[1].__dict__.items():
-                if value is None:
-                    continue
-                cmd_list.append(f'-{param}={value}')
+            cmd_list.extend(
+                f'-{param}={value}'
+                for param, value in p_sets[1].__dict__.items()
+                if value is not None
+            )
+
             cmd_list[-1] += '"'
         if debug:
             cmd_list.append('-debug')

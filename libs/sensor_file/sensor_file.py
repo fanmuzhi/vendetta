@@ -19,8 +19,7 @@ class ConfigJson:
 
     def __init__(self, json_file):
         self._json_file = json_file
-        self._json_buffer = dict()
-        # self.load_local_json()
+        self._json_buffer = {}
 
     def load_local_json(self):
         with open(self._json_file) as reg:

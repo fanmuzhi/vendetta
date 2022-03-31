@@ -9,9 +9,6 @@ __author__ = "@henry.fan"
 
 import ctypes
 import json
-import os
-import re
-import time
 from datetime import datetime
 
 from libs import config as cfg
@@ -79,25 +76,24 @@ def sensor_info_list():
 
 def get_sensorlist(productname: str):
     if productname.lower().startswith('bmi'):
-        sensor_list = [
+        return [
             cfg.Sensor.acc.value,
             cfg.Sensor.gyr.value,
         ]
     elif productname.lower().startswith('bma'):
-        sensor_list = [cfg.Sensor.acc.value]
+        return [cfg.Sensor.acc.value]
     elif productname.lower().startswith('bmg'):
-        sensor_list = [cfg.Sensor.gyr.value]
+        return [cfg.Sensor.gyr.value]
     elif productname.lower().startswith('bmm'):
-        sensor_list = [cfg.Sensor.mag.value]
+        return [cfg.Sensor.mag.value]
     elif productname.lower().startswith('bmx'):
-        sensor_list = [
+        return [
             cfg.Sensor.acc.value,
             cfg.Sensor.gyr.value,
             cfg.Sensor.mag.value,
         ]
     else:
-        sensor_list = []
-    return sensor_list
+        return []
 
 
 def log_file_name(params_sets):

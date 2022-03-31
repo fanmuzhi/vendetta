@@ -3,11 +3,11 @@
 # Function: Provide the interfaces to operate qaat
 # Date:     June 12th 2018
 # =================================================================
-import logging
-
-# from log import logger
+import os
 import sys
-
+import re
+import time
+import logging
 from pywinauto import application
 
 # from pywinauto.findbestmatch import find_best_match
@@ -191,23 +191,17 @@ class Qseevt(object):
     #     time.sleep(1)
 
     def get_last_info_text(self):
-        # w_handle = findwindows.find_windows(class_name=Log_Analysis_win_class)
-        texts = self.app[log_analysis_window_name].children()[15].texts()
-        return texts
+        return self.app[log_analysis_window_name].children()[15].texts()
 
     def get_test_proc_info_richedit(self):
 
         w_handle = self.app[log_analysis_window_name]
         edit = w_handle.children()[0].children()[0].children()[0]
-        richedit_content = dumpwindow(edit)['text']
-        return richedit_content
+        return dumpwindow(edit)['text']
 
     def analyze_complete(self):
         text_list = self.get_last_info_text()
-        if isinstance(text_list, list) and 'Log analysis completed!' in text_list:
-            return True
-        else:
-            return False
+        return isinstance(text_list, list) and 'Log analysis completed!' in text_list
 
         # hwd = w_handle[0]
         # winlist = children(hwd)
@@ -227,7 +221,7 @@ class Qseevt(object):
             else:
                 pattern = r'^SensorAPI_([A-Z|a-z]+)_S\d+_I\d+_D\d+_R\d+_\[std_sensor_event\].csv'
                 m = re.match(pattern, csv_name)
-                return True if m else False
+                return bool(m)
 
         self.set_hdffile_text(hdflogfile)
         self.run_log_analysis()

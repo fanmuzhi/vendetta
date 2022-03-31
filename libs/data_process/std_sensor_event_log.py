@@ -61,14 +61,9 @@ def print_df(dataframe):
 
 
 def calc_actual_odr(request_odr):
-    if not ODR_SUPPORTED_MIN <= request_odr <= ODR_SUPPORTED_MAX:
-        return request_odr
-    # elif request_odr <= ODR_SUPPORTED_MIN:
-    #     return ODR_SUPPORTED_MIN
-    else:
-        return ODR_SUPPORTED_MIN * (
+    return ODR_SUPPORTED_MIN * (
             2 ** (math.ceil(math.log(request_odr / ODR_SUPPORTED_MIN, 2)))
-        )
+        ) if ODR_SUPPORTED_MIN <= request_odr <= ODR_SUPPORTED_MAX else request_odr
 
 
 def calc_interval_ms(odr):
@@ -97,14 +92,11 @@ class SeeDrvLog:
     def get_dataheader_row(self):
         with open(self.csv_file, 'r') as f:
             for row, line in enumerate(f.readlines()):
-                if line.startswith('#'):
-                    continue
-                else:
+                if not line.startswith('#'):
                     return row - 1
-            else:
-                raise RuntimeError(
-                    f'no data header row found in {os.path.relpath(self.csv_file)}'
-                )
+            raise RuntimeError(
+                f'no data header row found in {os.path.relpath(self.csv_file)}'
+            )
 
     def get_sensor(self):
         return self.info_df.loc['#Sensor'].iat[0]
@@ -117,8 +109,9 @@ class SeeDrvLog:
     def get_info_odr(self):
         try:
             odr_text_pattern = r'{ sample_rate : (\d+\.\d+) }'
-            match = re.search(odr_text_pattern, self.info_df.loc['#Request'].iat[0])
-            if match:
+            if match := re.search(
+                odr_text_pattern, self.info_df.loc['#Request'].iat[0]
+            ):
                 return calc_actual_odr(float(match.groups()[0]))
         except KeyError:
             return None
@@ -149,24 +142,19 @@ class SeeDrvLog:
         return df
 
     def get_mean(self, column_name) -> float:
-        value = self.data_df[column_name].mean()
-        return value
+        return self.data_df[column_name].mean()
 
     def get_max(self, column_name) -> float:
-        value = self.data_df[column_name].max()
-        return value
+        return self.data_df[column_name].max()
 
     def get_min(self, column_name) -> float:
-        value = self.data_df[column_name].min()
-        return value
+        return self.data_df[column_name].min()
 
     def get_std(self, column_name) -> float:
-        value = self.data_df[column_name].std()
-        return value
+        return self.data_df[column_name].std()
 
     def get_sum(self, column_name) -> float:
-        value = self.data_df[column_name].sum()
-        return value
+        return self.data_df[column_name].sum()
 
     def data_stats(self):
         return self.data_df.describe()
@@ -191,8 +179,7 @@ class SeeDrvLog:
             pattern = (
                 r'^SensorAPI_([A-Z|a-z]+)_S\d+_I\d+_D\d+_R\d+_\[std_sensor_event\].csv'
             )
-            m = re.match(pattern, csv_name)
-            return True if m else False
+            return re.match(pattern, csv_name)
 
     def check_data_length(self):
         pass
@@ -200,8 +187,8 @@ class SeeDrvLog:
     def odr_in_range(self, ignore_min=False, ignore_max=False):
         col_name = 'interval'
         intv = calc_interval_ms(self.odr)
-        l_limit = 0 * intv if not ignore_min else -float('inf')
-        h_limit = 1.8 * intv if not ignore_max else float('inf')
+        l_limit = -float('inf') if ignore_min else 0 * intv
+        h_limit = float('inf') if ignore_max else 1.8 * intv
         intv_min = self.stats[col_name]['min']
         intv_max = self.stats[col_name]['max']
         assert (

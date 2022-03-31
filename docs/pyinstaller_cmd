@@ -1,1 +1,3 @@
 pyinstaller --clean -F -c --distpath .\dist\autotest_app_v.1.2.0 -n autotest_app_v.1.2.0 -i .\resources\ico\icon.ico --version-file .\file_version_info.txt --additional-hooks-dir=hooks --hidden-import pytest_assume --hidden-import pytest_html --add-data "pytest_assume;./pytest_assume" --add-data "pytest_html;./pytest_html" main.py
+
+pyinstaller --clean -F -c --distpath .\dist\autotest_app_venv -n autotest_app_venv -i .\resources\ico\icon.ico --version-file .\file_version_info.txt --additional-hooks-dir=hooks --hidden-import pytest_assume --hidden-import pytest_html --hidden-import py --add-data ".\venv\Lib\site-packages\py;./py" --add-data "pytest_assume;./pytest_assume" --add-data "pytest_html;./pytest_html" main.py

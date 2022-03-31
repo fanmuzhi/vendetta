@@ -29,7 +29,6 @@ class ADB:
 
     @staticmethod
     def adb_devices():
-        device_id = None
         cmd_adb_devices = ['adb', 'devices']
         ret = subprocess.run(
             cmd_adb_devices,
@@ -40,12 +39,7 @@ class ADB:
             encoding="utf-8",
             timeout=20,
         )
-        devices = ret.stdout.split()[4:]
-        if devices:
-            # raise RuntimeError('empty adb devices list')
-            # devices
-            device_id = devices[0]
-        return device_id
+        return devices[0] if (devices := ret.stdout.split()[4:]) else None
 
     def adb_shell_popen(self, cmd):
         assert cmd
@@ -70,7 +64,7 @@ class ADB:
                 raise RuntimeError('Error in Waiting for adb devices')
             try:
                 ret = subprocess.run(cmd, timeout=2)
-                dev_ready = True if ret.returncode == 0 else False
+                dev_ready = ret.returncode == 0
             except subprocess.TimeoutExpired:
                 i += 1
 
@@ -114,8 +108,7 @@ class ADB:
 
     def adb_set_selinux(self, enable):
         cmd = ['setenforce', enable]
-        ret = self.adb_shell_run(cmd, check=True, timeout=60)
-        return ret
+        return self.adb_shell_run(cmd, check=True, timeout=60)
 
     def adb_sync(self):
         cmd = ['sync']
@@ -125,8 +118,7 @@ class ADB:
 
     def adb_chmod(self, value, target):
         cmd = ['chmod', value, target]
-        ret = self.adb_shell_run(cmd, check=True, timeout=60)
-        return ret
+        return self.adb_shell_run(cmd, check=True, timeout=60)
 
     def adb_rm_all_files_in(self, path):
         cmd = ['rm', '-rf', os.path.join(path, "*")]

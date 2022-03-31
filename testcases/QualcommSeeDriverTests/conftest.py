@@ -50,10 +50,11 @@ def pytest_addoption(parser):
 
 
 def resvalue_id_str(registry_dict):
-    words = []
-    for k, v in registry_dict.items():
-        words.append(f'{k}.{cfg.res_values.get(k, {}).get(v, "unknown")}')
-        # words.append(cfg.res_values.get(k, {}).get(v, "unknown"))
+    words = [
+        f'{k}.{cfg.res_values.get(k, {}).get(v, "unknown")}'
+        for k, v in registry_dict.items()
+    ]
+
     return f"{'-'.join(words)}"
 
 
@@ -93,8 +94,44 @@ def pytest_generate_tests(metafunc):
         for sensor_info in sensor_info_list:
             sensor = sensor_info['TYPE']
             hw_id = sensor_info['HW_ID']
-            params.extend([(sensor, -1, -2, hw_id)])
-            params.extend([(sensor, -3.0, -3.1, hw_id)])
+            # params.extend([(sensor, -1, -2, hw_id)])
+            # params.extend([(sensor, -3.0, -3.1, hw_id)])
+            params += list(
+                itertools.product(
+                    [sensor],
+                    [cfg.Odr.odr_max.value],
+                    [
+                        cfg.Odr.odr_min.value,
+                        cfg.Odr.odr_sweep_ascend.value,
+                        cfg.Odr.odr_sweep_descend.value,
+                        cfg.Odr.odr_random.value,
+                    ],
+                    [hw_id],
+                )
+            )
+            params += list(
+                itertools.product(
+                    [sensor],
+                    [cfg.Odr.odr_min.value],
+                    [
+                        cfg.Odr.odr_max.value,
+                        cfg.Odr.odr_sweep_ascend.value,
+                        cfg.Odr.odr_sweep_descend.value,
+                        cfg.Odr.odr_random.value,
+                    ],
+                    [hw_id],
+                )
+            )
+            params.extend(
+                [
+                    (
+                        sensor,
+                        cfg.Odr.odr_sweep_ascend.value,
+                        cfg.Odr.odr_sweep_descend,
+                        hw_id,
+                    )
+                ]
+            )
 
         if all(
             fix in metafunc.fixturenames for fix in ['sensor', 'odr0', 'odr1', 'hw_id']
@@ -139,8 +176,18 @@ def pytest_generate_tests(metafunc):
         ]
         for extern_info in external_sensor_info:
             sensor0, sensor1 = extern_info[0]['TYPE'], extern_info[1]['TYPE']
-            odrs = [(-1, -2), (-1, -3.1), (-2, -3.2), (-3.0, -3.1)]
             hw_id = extern_info[0]['HW_ID']
+            odrs = [
+                (-1, -2),
+                (-1, -3.0),
+                (-1, -3.1),
+                (-1, -3.2),
+                (-2, -1),
+                (-2, -3.0),
+                (-2, -3.1),
+                (-2, -3.2),
+                (-3.0, -3.1),
+            ]
             params.extend(list(itertools.product([(sensor0, sensor1)], odrs, [hw_id])))
         if all(
             fix in metafunc.fixturenames
