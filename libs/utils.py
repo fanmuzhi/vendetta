@@ -74,26 +74,26 @@ def sensor_info_list():
     return sensor_info_list
 
 
-def get_sensorlist(productname: str):
-    if productname.lower().startswith('bmi'):
-        return [
-            cfg.Sensor.acc.value,
-            cfg.Sensor.gyr.value,
-        ]
-    elif productname.lower().startswith('bma'):
-        return [cfg.Sensor.acc.value]
-    elif productname.lower().startswith('bmg'):
-        return [cfg.Sensor.gyr.value]
-    elif productname.lower().startswith('bmm'):
-        return [cfg.Sensor.mag.value]
-    elif productname.lower().startswith('bmx'):
-        return [
-            cfg.Sensor.acc.value,
-            cfg.Sensor.gyr.value,
-            cfg.Sensor.mag.value,
-        ]
-    else:
-        return []
+# def get_sensorlist(productname: str):
+#     if productname.lower().startswith('bmi'):
+#         return [
+#             cfg.Sensor.acc.value,
+#             cfg.Sensor.gyr.value,
+#         ]
+#     elif productname.lower().startswith('bma'):
+#         return [cfg.Sensor.acc.value]
+#     elif productname.lower().startswith('bmg'):
+#         return [cfg.Sensor.gyr.value]
+#     elif productname.lower().startswith('bmm'):
+#         return [cfg.Sensor.mag.value]
+#     elif productname.lower().startswith('bmx'):
+#         return [
+#             cfg.Sensor.acc.value,
+#             cfg.Sensor.gyr.value,
+#             cfg.Sensor.mag.value,
+#         ]
+#     else:
+#         return []
 
 
 def log_file_name(params_sets):

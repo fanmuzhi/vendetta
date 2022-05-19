@@ -73,13 +73,13 @@ class Registry(ConfigJson):
         temp_file_name = os.path.join(reg_path, f'temp_{reg_name}')
         with open(temp_file_name, 'w') as f_temp:
             self.dump_json(f_temp)
-        dest = os.path.join(cfg.QcmBoard.conf_dest_dir, reg_name)
+        dest = os.path.join(cfg.QualcommBoard.conf_dest_dir, reg_name)
         self.switch_reg_file(temp_file_name, dest)
         os.remove(temp_file_name)
 
     def reset_orig_reg(self):
         reg_path, reg_name = os.path.split(self._json_file)
-        dest = os.path.join(cfg.QcmBoard.conf_dest_dir, reg_name)
+        dest = os.path.join(cfg.QualcommBoard.conf_dest_dir, reg_name)
         self.switch_reg_file(self._json_file, dest)
 
     @staticmethod
@@ -87,7 +87,7 @@ class Registry(ConfigJson):
         adb = ADB(adb_id)
         adb.adb_root()
         adb.adb_remount()
-        adb.adb_rm_all_files_in(cfg.QcmBoard.registry_dir)
+        adb.adb_rm_all_files_in(cfg.QualcommBoard.registry_dir)
         adb.adb_push(reg, dest)
 
     @staticmethod
@@ -117,7 +117,5 @@ class FacCalBias(ConfigJson):
 
 
 if __name__ == '__main__':
+
     reg_file = r'C:\workspace\BPDD\SEE\8250_androidQ\config\kona_hdk_bmi26x_0.json'
-    prod = cfg.Product.bmi26x
-    registry = Registry(reg_file, prod)
-    registry.reset_orig_reg()

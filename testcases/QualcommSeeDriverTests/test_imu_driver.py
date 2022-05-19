@@ -38,8 +38,7 @@ def found_pass_in_log(fac_test, diag_packets_list):
 
 
 def bias_ver_updated(prev_biasvals, post_bias):
-    with pytest.assume:
-        return [pre + 1 for pre in prev_biasvals] == list(post_bias)
+    return [pre + 1 for pre in prev_biasvals] == list(post_bias)
 
 
 # def odr_in_range(log_obj, ignore_min=False, ignore_max=False):
@@ -64,7 +63,8 @@ def verify_csv_data(
     log_obj = std_sensor_event_log.SeeDrvLog(csv_log, skip_data=1)
     if not log_obj.odr or log_obj.dest_sensor != 'da_test':
         return
-
+    if not log_obj.enough_data_exists:
+        return
     with pytest.assume:
         log_obj.odr_in_range(ignore_min=ignore_odr_min, ignore_max=ignore_odr_max)
     for axis in std_sensor_event_log.axises:

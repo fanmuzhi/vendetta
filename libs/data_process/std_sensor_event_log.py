@@ -63,7 +63,7 @@ def print_df(dataframe):
 def calc_actual_odr(request_odr):
     return ODR_SUPPORTED_MIN * (
             2 ** (math.ceil(math.log(request_odr / ODR_SUPPORTED_MIN, 2)))
-        ) if ODR_SUPPORTED_MIN <= request_odr <= ODR_SUPPORTED_MAX else request_odr
+    ) if ODR_SUPPORTED_MIN <= request_odr <= ODR_SUPPORTED_MAX else request_odr
 
 
 def calc_interval_ms(odr):
@@ -110,7 +110,7 @@ class SeeDrvLog:
         try:
             odr_text_pattern = r'{ sample_rate : (\d+\.\d+) }'
             if match := re.search(
-                odr_text_pattern, self.info_df.loc['#Request'].iat[0]
+                    odr_text_pattern, self.info_df.loc['#Request'].iat[0]
             ):
                 return calc_actual_odr(float(match.groups()[0]))
         except KeyError:
@@ -129,6 +129,10 @@ class SeeDrvLog:
         df.drop(columns='Status', inplace=True, errors='ignore')
         # df['log_time'] = self.time_data(df['Log Timestamp (19.2MHz Ticks)'])
         # df['time'] = self.time_data(df['Timestamp (19.2MHz Ticks)'])
+        if df.shape[0] < skip_data + 2:
+            self.enough_data_exists = False
+            self.data_df = df
+            return
         if skip_data > 0:
             df = df.drop(list(range(skip_data)))
         df = df.assign(
@@ -171,8 +175,8 @@ class SeeDrvLog:
         if os.path.splitext(csv_name)[1] != '.csv':
             return False
         elif (
-            'resampler' in csv_name.lower()
-            or '[std_sensor_event]' not in csv_name.lower()
+                'resampler' in csv_name.lower()
+                or '[std_sensor_event]' not in csv_name.lower()
         ):
             return False
         else:
@@ -192,10 +196,10 @@ class SeeDrvLog:
         intv_min = self.stats[col_name]['min']
         intv_max = self.stats[col_name]['max']
         assert (
-            l_limit
-            <= self.stats[col_name]['min']
-            < self.stats[col_name]['max']
-            < h_limit
+                l_limit
+                <= self.stats[col_name]['min']
+                < self.stats[col_name]['max']
+                < h_limit
         ), f'{self.sensor} time interval [{intv_min}, {intv_max}] data out of range [{l_limit} {h_limit}] in <{os.path.relpath(self.csv_file)}>'
 
     def check_data_range(self, col_name, axis):
@@ -204,7 +208,7 @@ class SeeDrvLog:
         h_limit = data_bases[self.sensor][axis] + data_offsets[self.sensor][axis]
         data_min, data_max = self.stats[col_name]['min'], self.stats[col_name]['max']
         assert (
-            l_limit <= data_min <= data_max <= h_limit
+                l_limit <= data_min <= data_max <= h_limit
         ), f"{col_name} data [{data_min}, {data_max}] out of range [{l_limit}, {h_limit}] in {os.path.relpath(self.csv_file)}"
 
     def check_data_stddev(self, col_name, axis):
@@ -213,14 +217,14 @@ class SeeDrvLog:
         # h_limit = 0
         h_limit = stddev_limits[self.sensor][axis]
         assert (
-            l_limit < stddev < h_limit
+                l_limit < stddev < h_limit
         ), f"{col_name} standard deviation {stddev} exceeds limit [{l_limit}, {h_limit}] in {os.path.relpath(self.csv_file)}"
 
     def check_norm_ord(self, *cols, ord=2):
         norms = np.linalg.norm(self.data_df[list(cols)], ord=ord, axis=1)
         norms_min, norms_max = min(norms), max(norms)
         assert (
-            MAG_NORM_LIMIT_L < norms_min <= norms_max <= MAG_NORM_LIMIT_H
+                MAG_NORM_LIMIT_L < norms_min <= norms_max <= MAG_NORM_LIMIT_H
         ), f'{cols} norm [{norms_min, norms_max}] out of range [{MAG_NORM_LIMIT_L, MAG_NORM_LIMIT_H}] in {os.path.relpath(self.csv_file)}'
 
 

@@ -38,7 +38,7 @@ def main():
     else:
         product = argv[argv.index('--product') + 1]
 
-    if not product or not utils.get_sensorlist(product):
+    if not product:
         print('invalid product name')
         sys.exit(1)
 

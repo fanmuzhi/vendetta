@@ -1,6 +1,7 @@
 .idea/
 *.isf
 *.pyc
+*.spec
 docs/~$Auto_SEE_ACC.xlsx
 docs/~$TestSpec_SEE_IMU_BMIxxx_Vxxx.xlsx
 testcases/test.log

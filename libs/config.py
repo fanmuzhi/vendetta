@@ -3,6 +3,7 @@
 """
 # Description: project config file
 """
+
 __filename__ = "config"
 __author__ = "@henry.fan"
 import logging
@@ -26,15 +27,7 @@ else:
     minidm_stdout = True
 
 
-class Product:
-    bmi26x = 'bmi26x'
-
-
-class ConfigFile:
-    pass
-
-
-class QcmBoard:
+class QualcommBoard:
     name = ''
     vid = 1478
     manufacturer = 'Qualcomm Incorporated'
@@ -79,15 +72,6 @@ class Odr(Enum):
     odr_random = -4
 
 
-odr_to_interval = {
-    Odr.odr_max: 2.5,
-    Odr.odr_min: 40,
-    Odr.odr_25hz: 4,
-    Odr.odr_100hz: 10,
-    Odr.odr_50hz: 20,
-    Odr.odr_200hz: 5,
-}
-
 res_values = {
     Sensor.acc.value: {0: '2g', 1: '4g', 2: '8g', 3: '16g'},
     Sensor.gyr.value: {1: '250dps', 2: '500dps', 3: '1000dps', 4: '2000dps'},
@@ -114,24 +98,8 @@ class MagRes(Enum):
     res_1 = 1
 
 
-res_idx_dict = {
-    Sensor.acc.value: AccRes,
-    Sensor.gyr.value: GyrRes,
-    Sensor.mag.value: MagRes,
-}
-
-
 class FacTest(Enum):
     Fac_Software = 0
     HardwareSelfTest = 1
     Calibration = 2
     Connectivity = 3
-
-
-if __name__ == '__main__':
-    # sensors = [Sensor.acc.value, Sensor.gyr.value]
-    print(res_idx_dict)
-    # for sensor in sensors:
-    #     res_idx_vals_list.append()
-    #
-    # print([idx for idx in zip(res_idx_dict[sensor]])

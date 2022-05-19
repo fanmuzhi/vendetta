@@ -203,12 +203,6 @@ class Qseevt(object):
         text_list = self.get_last_info_text()
         return isinstance(text_list, list) and 'Log analysis completed!' in text_list
 
-        # hwd = w_handle[0]
-        # winlist = children(hwd)
-        #
-        # richedit_content = dumpwindow(winlist[2])['text']
-        # return richedit_content
-
     def parse_hdf_to_csv(self, hdflogfile):
         def valid_csv_name(csv_name):
             if os.path.splitext(csv_name)[1] != '.csv':
@@ -253,8 +247,6 @@ def analyze_hdf_file(hdf_file, seevt_exe, out=False):
 
         logging.info("Browse log file .hdf log file")
         p_qawa.wait(log_analysis_window_name, wait_until)
-        # for i, child in enumerate(p_qawa.app[log_analysis_window_name].children()):
-        #     print("---", i, child)
         p_qawa.app[log_analysis_window_name].children()[7].set_text(r"c:\r.hdf")
         time.sleep(1)
         p_qawa.app[log_analysis_window_name].children()[10].set_text(r"c:\bmi320.txt")
@@ -317,28 +309,22 @@ if __name__ == "__main__":
     # ret_val = False
     # wait_until = 'ready'
 
-    print(is_admin())
 
     if is_admin():
         print(is_admin())
         # analyze_hdf_file(hdf, seevt_exe)
-        pq = Qseevt(cfg.seevt_exe)
-        pq.run()
+        qsvt = Qseevt(cfg.seevt_exe)
+        qsvt.run()
 
-        pq.enter_log_analysis_window()
-        pq.set_hdffile_text(r"C:\Users\FNH1SGH\Desktop\hdfs\11-08.15-27-30-425.hdf")
-        pq.set_sensor_info_file_text(r"C:\Users\FNH1SGH\Desktop\bmi320_sensor_info.txt")
-        pq.run_log_analysis()
-        while 'Log analysis completed!' not in pq.get_last_info_text():
-            print(pq.get_last_info_text())
+        qsvt.enter_log_analysis_window()
+        qsvt.set_hdffile_text(r"C:\Users\FNH1SGH\Desktop\hdfs\11-08.15-27-30-425.hdf")
+        qsvt.set_sensor_info_file_text(r"C:\Users\FNH1SGH\Desktop\bmi320_sensor_info.txt")
+        qsvt.run_log_analysis()
+        while 'Log analysis completed!' not in qsvt.get_last_info_text():
+            print(qsvt.get_last_info_text())
             time.sleep(1)
         time.sleep(51)
-        pq.close()
-        #
-        # pq.wait(qseevt_luanch_window_name, wait_until)
-        # pq.app[m]
-        #
-        # time.sleep(5)
+        qsvt.close()
     else:
         print(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
         # Re-run the program with admin rights
